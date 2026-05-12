@@ -6,9 +6,9 @@
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.scp.foundation.ui.controllers.SiteListController">
     <top>
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <padding><Insets top="10" right="14" bottom="10" left="14"/></padding>
-            <Label text="CONTAINMENT SITES" styleClass="header"/>
+        <HBox styleClass="toolbar-bar">
+            <Label text="▸" styleClass="toolbar-prefix"/>
+            <Label text="CONTAINMENT SITES" styleClass="toolbar-title"/>
             <Region HBox.hgrow="ALWAYS"/>
             <TextField fx:id="searchField" promptText="Search" prefWidth="240"/>
             <Button text="Refresh" onAction="#onRefresh"/>

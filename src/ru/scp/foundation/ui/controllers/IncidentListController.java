@@ -12,6 +12,7 @@ import ru.scp.foundation.access.AccessControl;
 import ru.scp.foundation.auth.Session;
 import ru.scp.foundation.dao.*;
 import ru.scp.foundation.model.*;
+import ru.scp.foundation.ui.util.CellFactories;
 import ru.scp.foundation.ui.util.Dialogs;
 
 import java.sql.SQLException;
@@ -54,6 +55,10 @@ public class IncidentListController {
         colMtf.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().mtfId() == null ? "—" : mtfCallsign.getOrDefault(c.getValue().mtfId(), "?")));
         colSeverity.setCellValueFactory(c -> new SimpleIntegerProperty(c.getValue().severity()));
         colDesc.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().description()));
+
+        colDate.setCellFactory(CellFactories.dateTime());
+        colSeverity.setCellFactory(CellFactories.severityBar());
+
         table.setItems(data);
     }
 

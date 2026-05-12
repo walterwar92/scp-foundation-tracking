@@ -12,6 +12,7 @@ import ru.scp.foundation.access.AccessControl;
 import ru.scp.foundation.auth.Session;
 import ru.scp.foundation.dao.*;
 import ru.scp.foundation.model.*;
+import ru.scp.foundation.ui.util.CellFactories;
 import ru.scp.foundation.ui.util.Dialogs;
 
 import java.sql.SQLException;
@@ -55,6 +56,9 @@ public class ProcedureRevisionsController {
         colRev.setCellValueFactory(c -> new SimpleIntegerProperty(c.getValue().revisionNumber()));
         colDate.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().revisionDate()));
         colApp.setCellValueFactory(c -> new SimpleStringProperty(personnelNameById.getOrDefault(c.getValue().approvedById(), "?")));
+
+        colDate.setCellFactory(CellFactories.date());
+
         revTable.setItems(revisions);
         revTable.getSelectionModel().selectedItemProperty().addListener((o, oV, nV) -> {
             textArea.setText(nV == null ? "" : nV.procedureText());

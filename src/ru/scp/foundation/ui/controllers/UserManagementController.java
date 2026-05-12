@@ -14,6 +14,7 @@ import ru.scp.foundation.dao.UserDao;
 import ru.scp.foundation.model.Personnel;
 import ru.scp.foundation.model.User;
 import ru.scp.foundation.model.UserRole;
+import ru.scp.foundation.ui.util.CellFactories;
 import ru.scp.foundation.ui.util.Dialogs;
 
 import java.sql.SQLException;
@@ -46,6 +47,9 @@ public class UserManagementController {
         colName.setCellValueFactory(c -> new SimpleStringProperty(personnelNameById.getOrDefault(c.getValue().personnelId(), "?")));
         colRole.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().role().name()));
         colCreated.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().createdAt()));
+
+        colCreated.setCellFactory(CellFactories.dateTime());
+
         table.setItems(data);
     }
 

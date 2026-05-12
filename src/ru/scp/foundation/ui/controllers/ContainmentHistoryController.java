@@ -11,6 +11,7 @@ import ru.scp.foundation.access.AccessControl;
 import ru.scp.foundation.auth.Session;
 import ru.scp.foundation.dao.*;
 import ru.scp.foundation.model.*;
+import ru.scp.foundation.ui.util.CellFactories;
 import ru.scp.foundation.ui.util.Dialogs;
 
 import java.sql.SQLException;
@@ -45,6 +46,10 @@ public class ContainmentHistoryController {
         colSite.setCellValueFactory(c -> new SimpleStringProperty(siteCode.getOrDefault(c.getValue().siteId(), "?")));
         colIn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().movedIn()));
         colOut.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().movedOut()));
+
+        colIn.setCellFactory(CellFactories.date());
+        colOut.setCellFactory(CellFactories.date());
+
         table.setItems(data);
 
         scpFilter.setConverter(new javafx.util.StringConverter<>() {

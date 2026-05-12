@@ -6,9 +6,9 @@
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.scp.foundation.ui.controllers.MtfListController">
     <top>
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <padding><Insets top="10" right="14" bottom="10" left="14"/></padding>
-            <Label text="MOBILE TASK FORCES" styleClass="header"/>
+        <HBox styleClass="toolbar-bar">
+            <Label text="▸" styleClass="toolbar-prefix"/>
+            <Label text="MOBILE TASK FORCES" styleClass="toolbar-title"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Button text="Refresh" onAction="#onRefresh"/>
             <Button fx:id="addTeamBtn"  text="Add team"     onAction="#onAddTeam"/>
@@ -31,9 +31,9 @@
                 </TableView>
             </VBox>
             <VBox>
-                <HBox spacing="6" alignment="CENTER_LEFT">
-                    <padding><Insets left="10" top="6" right="10"/></padding>
-                    <Label text="Members" styleClass="subheader"/>
+                <HBox styleClass="toolbar-bar">
+                    <Label text="▸" styleClass="toolbar-prefix"/>
+                    <Label text="Members" styleClass="toolbar-title"/>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Button fx:id="addMemberBtn" text="Add member"   onAction="#onAddMember"/>
                     <Button fx:id="delMemberBtn" text="Remove"       onAction="#onRemoveMember" styleClass="danger"/>

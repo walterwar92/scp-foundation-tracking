@@ -7,9 +7,9 @@
             fx:controller="ru.scp.foundation.ui.controllers.ScpListController">
 
     <top>
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <padding><Insets top="10" right="14" bottom="10" left="14"/></padding>
-            <Label text="SCP OBJECTS" styleClass="header"/>
+        <HBox styleClass="toolbar-bar">
+            <Label text="▸" styleClass="toolbar-prefix"/>
+            <Label text="SCP OBJECTS" styleClass="toolbar-title"/>
             <Region HBox.hgrow="ALWAYS"/>
             <TextField fx:id="searchField" promptText="Search by number or name" prefWidth="280"/>
             <Button text="Refresh" onAction="#onRefresh"/>
