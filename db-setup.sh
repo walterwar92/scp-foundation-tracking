@@ -111,27 +111,32 @@ invoke_sql() {
     java "${args[@]}"
 }
 
-# ============== 5. CREATE ROLE + CREATE DATABASE ==============
-echo "[db-setup] Создание роли и БД..."
-invoke_sql org.postgresql.Driver \
-    "jdbc:postgresql://localhost:$PG_PORT/postgres" \
-    postgres "$PG_PASS" \
-    -c "CREATE ROLE $PG_USER LOGIN PASSWORD '$PG_PASS' CREATEDB" true
-
-invoke_sql org.postgresql.Driver \
-    "jdbc:postgresql://localhost:$PG_PORT/postgres" \
-    postgres "$PG_PASS" \
-    -c "CREATE DATABASE $PG_DB_NAME OWNER $PG_USER ENCODING 'UTF8' LC_COLLATE 'C' LC_CTYPE 'C' TEMPLATE template0" true
-
-# ============== 6. Применение SQL ==============
-echo "[db-setup] Применение schema/constraints/seed (Postgres)..."
-for f in 01_schema.sql 02_constraints.sql 03_seed.sql; do
-    echo "  sql/postgres/$f"
+# ============== 5. CREATE ROLE + CREATE DATABASE + apply SQL (idempotent) ==============
+PG_MARKER="$DB/.postgres-seeded"
+if [ -f "$PG_MARKER" ]; then
+    echo "[db-setup] PostgreSQL уже инициализирован — пропускаю SQL"
+else
+    echo "[db-setup] Создание роли и БД..."
     invoke_sql org.postgresql.Driver \
-        "jdbc:postgresql://localhost:$PG_PORT/$PG_DB_NAME" \
-        "$PG_USER" "$PG_PASS" \
-        -f "sql/postgres/$f" false
-done
+        "jdbc:postgresql://localhost:$PG_PORT/postgres" \
+        postgres "$PG_PASS" \
+        -c "CREATE ROLE $PG_USER LOGIN PASSWORD '$PG_PASS' CREATEDB" true
+
+    invoke_sql org.postgresql.Driver \
+        "jdbc:postgresql://localhost:$PG_PORT/postgres" \
+        postgres "$PG_PASS" \
+        -c "CREATE DATABASE $PG_DB_NAME OWNER $PG_USER ENCODING 'UTF8' LC_COLLATE 'C' LC_CTYPE 'C' TEMPLATE template0" true
+
+    echo "[db-setup] Применение schema/constraints/seed (Postgres)..."
+    for f in 01_schema.sql 02_constraints.sql 03_seed.sql; do
+        echo "  sql/postgres/$f"
+        invoke_sql org.postgresql.Driver \
+            "jdbc:postgresql://localhost:$PG_PORT/$PG_DB_NAME" \
+            "$PG_USER" "$PG_PASS" \
+            -f "sql/postgres/$f" false
+    done
+    date -u +%FT%TZ > "$PG_MARKER"
+fi
 
 # ============== 7. Firebird (только Linux; macOS — см. примечание выше) ==============
 if [ "$OS" = "Darwin" ]; then
@@ -188,25 +193,31 @@ else
     fi
 
     FB_DB_ABS="$ROOT/$FB_DIR/databases/scp_foundation.fdb"
+    FB_MARKER="$DB/.firebird-seeded"
 
-    if [ -f "$FB_DB_ABS" ]; then
-        echo "[db-setup] FDB-файл уже существует, пропускаю создание"
+    if [ -f "$FB_MARKER" ]; then
+        echo "[db-setup] Firebird уже инициализирован — пропускаю SQL"
     else
-        echo "[db-setup] Создание Firebird БД..."
-        invoke_sql org.firebirdsql.jdbc.FBDriver \
-            "jdbc:firebirdsql://localhost:$FB_PORT/$FB_DB_ABS?charSet=UTF8&createDatabaseIfNotExist=true" \
-            SYSDBA "$FB_PASS" \
-            -c 'SELECT 1 FROM RDB$DATABASE' true || true
-    fi
+        if [ -f "$FB_DB_ABS" ]; then
+            echo "[db-setup] FDB-файл существует, пропускаю создание"
+        else
+            echo "[db-setup] Создание Firebird БД..."
+            invoke_sql org.firebirdsql.jdbc.FBDriver \
+                "jdbc:firebirdsql://localhost:$FB_PORT/$FB_DB_ABS?charSet=UTF8&createDatabaseIfNotExist=true" \
+                SYSDBA "$FB_PASS" \
+                -c 'SELECT 1 FROM RDB$DATABASE' true || true
+        fi
 
-    echo "[db-setup] Применение schema/constraints/seed (Firebird)..."
-    for f in 01_schema.sql 02_constraints.sql 03_seed.sql; do
-        echo "  sql/firebird/$f"
-        invoke_sql org.firebirdsql.jdbc.FBDriver \
-            "jdbc:firebirdsql://localhost:$FB_PORT/$FB_DB_ABS?charSet=UTF8" \
-            SYSDBA "$FB_PASS" \
-            -f "sql/firebird/$f" true || true
-    done
+        echo "[db-setup] Применение schema/constraints/seed (Firebird)..."
+        for f in 01_schema.sql 02_constraints.sql 03_seed.sql; do
+            echo "  sql/firebird/$f"
+            invoke_sql org.firebirdsql.jdbc.FBDriver \
+                "jdbc:firebirdsql://localhost:$FB_PORT/$FB_DB_ABS?charSet=UTF8" \
+                SYSDBA "$FB_PASS" \
+                -f "sql/firebird/$f" true || true
+        done
+        date -u +%FT%TZ > "$FB_MARKER"
+    fi
 fi
 
 # ============== 8. config.properties ==============

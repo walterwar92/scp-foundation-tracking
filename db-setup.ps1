@@ -176,19 +176,25 @@ function Invoke-Sql {
 }
 
 # ============== 5. CREATE ROLE + CREATE DATABASE ==============
-Write-Host "[db-setup] Создание роли и БД..."
-Invoke-Sql 'org.postgresql.Driver' "jdbc:postgresql://localhost:$PgPort/postgres" `
-    'postgres' $PgPass '-c' "CREATE ROLE $PgUser LOGIN PASSWORD '$PgPass' CREATEDB" $true
-Invoke-Sql 'org.postgresql.Driver' "jdbc:postgresql://localhost:$PgPort/postgres" `
-    'postgres' $PgPass '-c' "CREATE DATABASE $PgDbName OWNER $PgUser ENCODING 'UTF8' LC_COLLATE 'C' LC_CTYPE 'C' TEMPLATE template0" $true
+$PgSeededMarker = Join-Path $DbDir '.postgres-seeded'
+if (Test-Path $PgSeededMarker) {
+    Write-Host "[db-setup] PostgreSQL уже инициализирован — пропускаю SQL"
+} else {
+    Write-Host "[db-setup] Создание роли и БД..."
+    Invoke-Sql 'org.postgresql.Driver' "jdbc:postgresql://localhost:$PgPort/postgres" `
+        'postgres' $PgPass '-c' "CREATE ROLE $PgUser LOGIN PASSWORD '$PgPass' CREATEDB" $true
+    Invoke-Sql 'org.postgresql.Driver' "jdbc:postgresql://localhost:$PgPort/postgres" `
+        'postgres' $PgPass '-c' "CREATE DATABASE $PgDbName OWNER $PgUser ENCODING 'UTF8' LC_COLLATE 'C' LC_CTYPE 'C' TEMPLATE template0" $true
 
-# ============== 6. Применение SQL ==============
-Write-Host "[db-setup] Применение schema/constraints/seed (Postgres)..."
-foreach ($f in @('01_schema.sql', '02_constraints.sql', '03_seed.sql')) {
-    Write-Host "  sql\postgres\$f"
-    Invoke-Sql 'org.postgresql.Driver' "jdbc:postgresql://localhost:$PgPort/$PgDbName" `
-        $PgUser $PgPass '-f' "sql\postgres\$f" $false
-    if ($LASTEXITCODE -ne 0) { Write-Error "Postgres SQL не применился: $f" }
+    # ============== 6. Применение SQL ==============
+    Write-Host "[db-setup] Применение schema/constraints/seed (Postgres)..."
+    foreach ($f in @('01_schema.sql', '02_constraints.sql', '03_seed.sql')) {
+        Write-Host "  sql\postgres\$f"
+        Invoke-Sql 'org.postgresql.Driver' "jdbc:postgresql://localhost:$PgPort/$PgDbName" `
+            $PgUser $PgPass '-f' "sql\postgres\$f" $false
+        if ($LASTEXITCODE -ne 0) { Write-Error "Postgres SQL не применился: $f" }
+    }
+    Set-Content -Path $PgSeededMarker -Value (Get-Date -Format 'o') -Encoding ASCII
 }
 
 # ============== 7. Скачиваем portable Firebird ==============
@@ -235,22 +241,27 @@ if (-not $fbProc) {
 $fbAbsPath = (Resolve-Path -LiteralPath $FbDir).Path
 $fbDbAbsPath = Join-Path $fbAbsPath 'databases\scp_foundation.fdb'
 
-if (Test-Path $fbDbAbsPath) {
-    Write-Host "[db-setup] FDB-файл существует, пропускаю создание"
+$FbSeededMarker = Join-Path $DbDir '.firebird-seeded'
+if (Test-Path $FbSeededMarker) {
+    Write-Host "[db-setup] Firebird уже инициализирован — пропускаю SQL"
 } else {
-    Write-Host "[db-setup] Создание Firebird БД..."
-    # Через Jaybird: подключение с createDatabaseIfNotExist создаёт файл
-    $createUrl = "jdbc:firebirdsql://localhost:$FbPort/${fbDbAbsPath}?charSet=UTF8&createDatabaseIfNotExist=true&isc_dpb_force_write=true"
-    Invoke-Sql 'org.firebirdsql.jdbc.FBDriver' $createUrl `
-        'SYSDBA' $FbPass '-c' 'SELECT 1 FROM RDB$DATABASE' $true
-}
+    if (Test-Path $fbDbAbsPath) {
+        Write-Host "[db-setup] FDB-файл существует, пропускаю создание"
+    } else {
+        Write-Host "[db-setup] Создание Firebird БД..."
+        $createUrl = "jdbc:firebirdsql://localhost:$FbPort/${fbDbAbsPath}?charSet=UTF8&createDatabaseIfNotExist=true&isc_dpb_force_write=true"
+        Invoke-Sql 'org.firebirdsql.jdbc.FBDriver' $createUrl `
+            'SYSDBA' $FbPass '-c' 'SELECT 1 FROM RDB$DATABASE' $true
+    }
 
-Write-Host "[db-setup] Применение schema/constraints/seed (Firebird)..."
-$fbJdbc = "jdbc:firebirdsql://localhost:$FbPort/${fbDbAbsPath}?charSet=UTF8"
-foreach ($f in @('01_schema.sql', '02_constraints.sql', '03_seed.sql')) {
-    Write-Host "  sql\firebird\$f"
-    Invoke-Sql 'org.firebirdsql.jdbc.FBDriver' $fbJdbc `
-        'SYSDBA' $FbPass '-f' "sql\firebird\$f" $true
+    Write-Host "[db-setup] Применение schema/constraints/seed (Firebird)..."
+    $fbJdbc = "jdbc:firebirdsql://localhost:$FbPort/${fbDbAbsPath}?charSet=UTF8"
+    foreach ($f in @('01_schema.sql', '02_constraints.sql', '03_seed.sql')) {
+        Write-Host "  sql\firebird\$f"
+        Invoke-Sql 'org.firebirdsql.jdbc.FBDriver' $fbJdbc `
+            'SYSDBA' $FbPass '-f' "sql\firebird\$f" $true
+    }
+    Set-Content -Path $FbSeededMarker -Value (Get-Date -Format 'o') -Encoding ASCII
 }
 
 # ============== 10. config.properties ==============
