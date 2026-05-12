@@ -120,6 +120,9 @@ public class MainController {
             contentArea.getChildren().add(view);
             crumbLabel.setText(Lang.t(crumbKey));
             setActiveNav(navBtn);
+            // Гасим анимацию фона на entity-экранах — иначе постоянный re-render
+            // Canvas сбивает hover-евенты Tooltip-ов в таблицах.
+            if (bg != null) bg.stop();
         } catch (Exception e) {
             Dialogs.error(Lang.t("msg.err.openScreen"), e.getMessage());
         }
