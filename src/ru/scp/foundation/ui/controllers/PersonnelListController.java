@@ -16,6 +16,7 @@ import ru.scp.foundation.dao.PersonnelDao;
 import ru.scp.foundation.model.ContainmentSite;
 import ru.scp.foundation.model.Personnel;
 import ru.scp.foundation.ui.util.Dialogs;
+import ru.scp.foundation.util.DataI18n;
 import ru.scp.foundation.util.Lang;
 
 import java.sql.SQLException;
@@ -46,7 +47,7 @@ public class PersonnelListController {
     @FXML
     private void initialize() {
         colName.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().fullName()));
-        colPosition.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().position()));
+        colPosition.setCellValueFactory(c -> new SimpleStringProperty(DataI18n.t(c.getValue().position())));
         colClearance.setCellValueFactory(c -> new SimpleIntegerProperty(c.getValue().clearanceLevel()));
         colSite.setCellValueFactory(c -> new SimpleStringProperty(siteCodeById.getOrDefault(c.getValue().baseSiteId(), "?")));
 

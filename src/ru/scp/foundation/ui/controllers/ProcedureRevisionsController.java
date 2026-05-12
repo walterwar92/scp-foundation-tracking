@@ -14,6 +14,7 @@ import ru.scp.foundation.dao.*;
 import ru.scp.foundation.model.*;
 import ru.scp.foundation.ui.util.CellFactories;
 import ru.scp.foundation.ui.util.Dialogs;
+import ru.scp.foundation.util.DataI18n;
 import ru.scp.foundation.util.Lang;
 
 import java.sql.SQLException;
@@ -63,7 +64,7 @@ public class ProcedureRevisionsController {
 
         revTable.setItems(revisions);
         revTable.getSelectionModel().selectedItemProperty().addListener((o, oV, nV) -> {
-            textArea.setText(nV == null ? "" : nV.procedureText());
+            textArea.setText(nV == null ? "" : DataI18n.t(nV.procedureText()));
         });
     }
 

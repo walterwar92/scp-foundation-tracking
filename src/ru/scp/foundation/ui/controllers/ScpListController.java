@@ -15,6 +15,7 @@ import ru.scp.foundation.model.ObjectClass;
 import ru.scp.foundation.model.ScpObject;
 import ru.scp.foundation.ui.util.CellFactories;
 import ru.scp.foundation.ui.util.Dialogs;
+import ru.scp.foundation.util.DataI18n;
 import ru.scp.foundation.util.Lang;
 
 import java.sql.SQLException;
@@ -44,7 +45,7 @@ public class ScpListController {
         colCodeName.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().codeName()));
         colClass.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().objectClass()));
         colDiscovered.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().discoveredAt()));
-        colDescription.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().description()));
+        colDescription.setCellValueFactory(c -> new SimpleStringProperty(DataI18n.t(c.getValue().description())));
 
         colClass.setCellFactory(CellFactories.classChip());
         colDiscovered.setCellFactory(CellFactories.date());

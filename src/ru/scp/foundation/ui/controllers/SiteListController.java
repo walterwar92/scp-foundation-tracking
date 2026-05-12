@@ -14,6 +14,7 @@ import ru.scp.foundation.auth.Session;
 import ru.scp.foundation.dao.ContainmentSiteDao;
 import ru.scp.foundation.model.ContainmentSite;
 import ru.scp.foundation.ui.util.Dialogs;
+import ru.scp.foundation.util.DataI18n;
 import ru.scp.foundation.util.Lang;
 
 import java.sql.SQLException;
@@ -38,7 +39,7 @@ public class SiteListController {
     @FXML
     private void initialize() {
         colCode.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().siteCode()));
-        colLocation.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().location()));
+        colLocation.setCellValueFactory(c -> new SimpleStringProperty(DataI18n.t(c.getValue().location())));
         colCap.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().capacity()));
         colSec.setCellValueFactory(c -> new SimpleIntegerProperty(c.getValue().securityLevel()));
         filtered = new FilteredList<>(all, x -> true);

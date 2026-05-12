@@ -12,6 +12,7 @@ import ru.scp.foundation.auth.Session;
 import ru.scp.foundation.dao.*;
 import ru.scp.foundation.model.*;
 import ru.scp.foundation.ui.util.Dialogs;
+import ru.scp.foundation.util.DataI18n;
 import ru.scp.foundation.util.Lang;
 
 import java.sql.SQLException;
@@ -49,7 +50,7 @@ public class MtfListController {
     @FXML
     private void initialize() {
         colCallsign.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().callsign()));
-        colSpec.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().specialization()));
+        colSpec.setCellValueFactory(c -> new SimpleStringProperty(DataI18n.t(c.getValue().specialization())));
         colBase.setCellValueFactory(c -> new SimpleStringProperty(siteCodeById.getOrDefault(c.getValue().baseSiteId(), "?")));
         teamsTable.setItems(teams);
 
