@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ru.scp.foundation.ui.controllers.MainController"
+            prefWidth="1280" prefHeight="800" styleClass="root">
+
+    <left>
+        <VBox styleClass="sidebar" prefWidth="220" spacing="6">
+            <Label text="SCP FOUNDATION" styleClass="header"/>
+            <Label text="SECURE TERMINAL" styleClass="subheader"/>
+            <Region prefHeight="14"/>
+            <Button text="SCP Objects"     onAction="#showScpObjects"   prefWidth="200"/>
+            <Button text="Containment Sites" onAction="#showSites"      prefWidth="200"/>
+            <Button text="Personnel"        onAction="#showPersonnel"   prefWidth="200"/>
+            <Button text="MTF Teams"        onAction="#showMtfTeams"    prefWidth="200"/>
+            <Button text="Incidents"        onAction="#showIncidents"   prefWidth="200"/>
+            <Button text="Containment History" onAction="#showHistory"  prefWidth="200"/>
+            <Button text="Procedure Revisions" onAction="#showProcedures" prefWidth="200"/>
+            <Region prefHeight="8"/>
+            <Separator/>
+            <Region prefHeight="8"/>
+            <Button fx:id="usersButton" text="Users" onAction="#showUsers" prefWidth="200"/>
+            <Region VBox.vgrow="ALWAYS"/>
+            <Button text="LOGOUT" onAction="#onLogout" prefWidth="200" styleClass="danger"/>
+        </VBox>
+    </left>
+
+    <center>
+        <StackPane fx:id="contentArea">
+            <Canvas fx:id="bgCanvas" width="1060" height="760"/>
+            <Label fx:id="welcomeLabel" styleClass="header"/>
+        </StackPane>
+    </center>
+
+    <bottom>
+        <HBox styleClass="status-bar" spacing="20">
+            <Label fx:id="statusUser" styleClass="status"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="statusDb"   styleClass="status"/>
+        </HBox>
+    </bottom>
+</BorderPane>
