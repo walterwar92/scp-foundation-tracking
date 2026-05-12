@@ -103,36 +103,22 @@ public final class CellFactories {
     }
 
     /**
-     * Ячейка обрезает длинный текст с многоточием (стандартное поведение
-     * JavaFX TableCell), при наведении показывает полный текст в Tooltip.
-     *
-     * Wrap в ячейке убран намеренно: связка wrap-Label + maxWidth-binding
-     * вызывала layout-thrash и Popup tooltip мигал из-за постоянных
-     * реанкоринг-проходов.
+     * Ячейка показывает текст с переносом по словам. Tooltip убран
+     * намеренно — Popup-tooltip мигал из-за фоновых layout-passов JavaFX
+     * (и без анимации фона тоже). Полный текст доступен через двойной клик
+     * «редактировать».
      */
     public static <S> Callback<TableColumn<S, String>, TableCell<S, String>> wrappingText() {
-        return col -> new TableCell<>() {
-            private final Tooltip tip = new Tooltip();
-            {
-                tip.setMaxWidth(540);
-                tip.setWrapText(true);
-                tip.setShowDelay(Duration.millis(100));
-                tip.setShowDuration(Duration.INDEFINITE);
-                tip.setHideDelay(Duration.ZERO);
-                tip.getStyleClass().add("scp-tooltip");
-            }
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null || item.isEmpty()) {
-                    setText(null);
-                    setTooltip(null);
-                    return;
+        return col -> {
+            TableCell<S, String> cell = new TableCell<S, String>() {
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty || item == null ? null : item);
                 }
-                setText(item);
-                tip.setText(item);
-                setTooltip(tip);
-            }
+            };
+            cell.setWrapText(true);
+            return cell;
         };
     }
 
