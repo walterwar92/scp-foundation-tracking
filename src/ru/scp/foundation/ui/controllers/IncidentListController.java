@@ -188,7 +188,7 @@ public class IncidentListController {
         ComboBox<Integer> severity = new ComboBox<>(FXCollections.observableArrayList(1, 2, 3, 4, 5));
         severity.setValue(existing == null ? 3 : existing.severity());
 
-        TextArea desc = new TextArea(existing == null ? "" : existing.description());
+        TextArea desc = new TextArea(existing == null ? "" : DataI18n.t(existing.description()));
         desc.setPrefRowCount(5);
         desc.setPrefColumnCount(50);
         desc.setWrapText(true);

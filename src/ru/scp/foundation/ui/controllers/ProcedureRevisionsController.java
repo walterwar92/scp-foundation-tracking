@@ -51,7 +51,7 @@ public class ProcedureRevisionsController {
         scpList.setCellFactory(lv -> new ListCell<>() {
             @Override protected void updateItem(ScpObject o, boolean empty) {
                 super.updateItem(o, empty);
-                setText(empty || o == null ? "" : o.itemNumber() + " — " + o.codeName());
+                setText(empty || o == null ? "" : o.itemNumber() + " — " + DataI18n.t(o.codeName()));
             }
         });
         scpList.getSelectionModel().selectedItemProperty().addListener((o, oV, nV) -> reloadRevisions(nV));
@@ -132,7 +132,7 @@ public class ProcedureRevisionsController {
         Dialog<ProcedureRevision> d = new Dialog<>();
         d.setTitle(existing == null ? Lang.t("dlg.proc.new") + revNum + " for " + scp.itemNumber() : Lang.t("dlg.proc.edit"));
 
-        Label scpInfo = new Label(scp.itemNumber() + " — " + scp.codeName());
+        Label scpInfo = new Label(scp.itemNumber() + " — " + DataI18n.t(scp.codeName()));
         Label revInfo = new Label("#" + revNum);
         DatePicker date = new DatePicker(existing == null ? LocalDate.now() : existing.revisionDate());
         ComboBox<Personnel> approvedCb = new ComboBox<>(FXCollections.observableArrayList(personnel));
@@ -142,7 +142,7 @@ public class ProcedureRevisionsController {
         });
         if (existing != null) personnel.stream().filter(p -> p.id() == existing.approvedById()).findFirst().ifPresent(approvedCb::setValue);
 
-        TextArea text = new TextArea(existing == null ? "" : existing.procedureText());
+        TextArea text = new TextArea(existing == null ? "" : DataI18n.t(existing.procedureText()));
         text.setPrefRowCount(10);
         text.setPrefColumnCount(60);
         text.setWrapText(true);

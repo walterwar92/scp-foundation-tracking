@@ -42,7 +42,7 @@ public class ScpListController {
     @FXML
     private void initialize() {
         colItemNumber.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().itemNumber()));
-        colCodeName.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().codeName()));
+        colCodeName.setCellValueFactory(c -> new SimpleStringProperty(DataI18n.t(c.getValue().codeName())));
         colClass.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().objectClass()));
         colDiscovered.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().discoveredAt()));
         colDescription.setCellValueFactory(c -> new SimpleStringProperty(DataI18n.t(c.getValue().description())));
@@ -143,11 +143,11 @@ public class ScpListController {
         dialog.setTitle(existing == null ? Lang.t("dlg.scp.add") : Lang.t("dlg.scp.edit") + " " + existing.itemNumber());
 
         TextField itemNum = new TextField(existing == null ? "" : existing.itemNumber());
-        TextField codeName = new TextField(existing == null ? "" : existing.codeName());
+        TextField codeName = new TextField(existing == null ? "" : DataI18n.t(existing.codeName()));
         ComboBox<ObjectClass> classCb = new ComboBox<>(FXCollections.observableArrayList(ObjectClass.values()));
         classCb.setValue(existing == null ? ObjectClass.SAFE : existing.objectClass());
         DatePicker discovered = new DatePicker(existing == null ? null : existing.discoveredAt());
-        TextArea desc = new TextArea(existing == null ? "" : existing.description());
+        TextArea desc = new TextArea(existing == null ? "" : DataI18n.t(existing.description()));
         desc.setPrefRowCount(6);
         desc.setPrefColumnCount(50);
         desc.setWrapText(true);

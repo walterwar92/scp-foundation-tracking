@@ -167,7 +167,7 @@ public class MtfListController {
         Dialog<MtfTeam> d = new Dialog<>();
         d.setTitle(existing == null ? Lang.t("dlg.team.add") : Lang.t("dlg.team.edit") + " " + existing.callsign());
         TextField callsign = new TextField(existing == null ? "" : existing.callsign());
-        TextField spec = new TextField(existing == null ? "" : existing.specialization());
+        TextField spec = new TextField(existing == null ? "" : DataI18n.t(existing.specialization()));
         ComboBox<ContainmentSite> siteCb = new ComboBox<>(FXCollections.observableArrayList(sites));
         siteCb.setConverter(new javafx.util.StringConverter<>() {
             @Override public String toString(ContainmentSite s) { return s == null ? "" : s.siteCode(); }

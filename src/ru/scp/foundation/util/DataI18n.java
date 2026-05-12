@@ -21,6 +21,13 @@ public final class DataI18n {
     private static final Map<String, String> EN_TO_RU = new HashMap<>();
 
     static {
+        // ===== scp_objects.code_name =====
+        EN_TO_RU.put("The Sculpture",           "Скульптура");
+        EN_TO_RU.put("Hard-to-Destroy Reptile", "Трудноуничтожимая рептилия");
+        EN_TO_RU.put("Plague Doctor",           "Чумной доктор");
+        EN_TO_RU.put("The Shy Guy",             "Стеснительный");
+        EN_TO_RU.put("The Clockworks",          "Часовой механизм");
+
         // ===== scp_objects.description =====
         EN_TO_RU.put("Hostile concrete statue. Cannot move while observed.",
                      "Враждебная бетонная статуя. Не может двигаться, пока за ней наблюдают.");

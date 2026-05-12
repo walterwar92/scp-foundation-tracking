@@ -113,7 +113,7 @@ public class SiteListController {
         Dialog<ContainmentSite> d = new Dialog<>();
         d.setTitle(existing == null ? Lang.t("dlg.site.add") : Lang.t("dlg.site.edit") + " " + existing.siteCode());
         TextField code = new TextField(existing == null ? "" : existing.siteCode());
-        TextField loc = new TextField(existing == null ? "" : existing.location());
+        TextField loc = new TextField(existing == null ? "" : DataI18n.t(existing.location()));
         TextField cap = new TextField(existing == null || existing.capacity() == null ? "" : existing.capacity().toString());
         ComboBox<Integer> sec = new ComboBox<>(FXCollections.observableArrayList(1, 2, 3, 4, 5));
         sec.setValue(existing == null ? 3 : existing.securityLevel());

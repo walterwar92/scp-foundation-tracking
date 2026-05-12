@@ -128,7 +128,7 @@ public class PersonnelListController {
         Dialog<Personnel> d = new Dialog<>();
         d.setTitle(existing == null ? Lang.t("dlg.personnel.add") : Lang.t("dlg.personnel.edit") + " " + existing.fullName());
         TextField name = new TextField(existing == null ? "" : existing.fullName());
-        TextField position = new TextField(existing == null ? "" : existing.position());
+        TextField position = new TextField(existing == null ? "" : DataI18n.t(existing.position()));
         ComboBox<Integer> clearance = new ComboBox<>(FXCollections.observableArrayList(0, 1, 2, 3, 4, 5));
         clearance.setValue(existing == null ? 1 : existing.clearanceLevel());
         ComboBox<ContainmentSite> siteCb = new ComboBox<>(FXCollections.observableArrayList(sites));
