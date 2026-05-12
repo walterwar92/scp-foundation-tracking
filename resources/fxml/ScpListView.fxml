@@ -1,7 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.Label?>
-<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="ru.scp.foundation.ui.controllers.ScpListController">
-    <Label text="SCP OBJECTS — placeholder"/>
-</VBox>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ru.scp.foundation.ui.controllers.ScpListController">
+
+    <top>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <padding><Insets top="10" right="14" bottom="10" left="14"/></padding>
+            <Label text="SCP OBJECTS" styleClass="header"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <TextField fx:id="searchField" promptText="Search by number or name" prefWidth="280"/>
+            <Button text="Refresh" onAction="#onRefresh"/>
+            <Button fx:id="addBtn"  text="Add"    onAction="#onAdd"/>
+            <Button fx:id="editBtn" text="Edit"   onAction="#onEdit"/>
+            <Button fx:id="delBtn"  text="Delete" onAction="#onDelete" styleClass="danger"/>
+        </HBox>
+    </top>
+
+    <center>
+        <TableView fx:id="table">
+            <columns>
+                <TableColumn fx:id="colItemNumber" text="Item #"      prefWidth="100"/>
+                <TableColumn fx:id="colCodeName"   text="Code name"   prefWidth="220"/>
+                <TableColumn fx:id="colClass"      text="Class"       prefWidth="100"/>
+                <TableColumn fx:id="colDiscovered" text="Discovered"  prefWidth="120"/>
+                <TableColumn fx:id="colDescription" text="Description" prefWidth="400"/>
+            </columns>
+        </TableView>
+    </center>
+</BorderPane>
