@@ -49,6 +49,7 @@ public class ScpListController {
 
         colClass.setCellFactory(CellFactories.classChip());
         colDiscovered.setCellFactory(CellFactories.date());
+        colDescription.setCellFactory(CellFactories.wrappingText());
 
         filtered = new FilteredList<>(all, x -> true);
         table.setItems(filtered);
@@ -147,7 +148,9 @@ public class ScpListController {
         classCb.setValue(existing == null ? ObjectClass.SAFE : existing.objectClass());
         DatePicker discovered = new DatePicker(existing == null ? null : existing.discoveredAt());
         TextArea desc = new TextArea(existing == null ? "" : existing.description());
-        desc.setPrefRowCount(5);
+        desc.setPrefRowCount(6);
+        desc.setPrefColumnCount(50);
+        desc.setWrapText(true);
 
         GridPane grid = new GridPane();
         grid.setHgap(10); grid.setVgap(10);

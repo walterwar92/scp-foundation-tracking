@@ -52,6 +52,7 @@ public class MtfListController {
         colCallsign.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().callsign()));
         colSpec.setCellValueFactory(c -> new SimpleStringProperty(DataI18n.t(c.getValue().specialization())));
         colBase.setCellValueFactory(c -> new SimpleStringProperty(siteCodeById.getOrDefault(c.getValue().baseSiteId(), "?")));
+        colSpec.setCellFactory(ru.scp.foundation.ui.util.CellFactories.wrappingText());
         teamsTable.setItems(teams);
 
         colMemberName.setCellValueFactory(c -> new SimpleStringProperty(personnelNameById.getOrDefault(c.getValue().personnelId(), "?")));

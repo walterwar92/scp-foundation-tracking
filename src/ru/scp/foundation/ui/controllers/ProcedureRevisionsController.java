@@ -145,6 +145,7 @@ public class ProcedureRevisionsController {
         TextArea text = new TextArea(existing == null ? "" : existing.procedureText());
         text.setPrefRowCount(10);
         text.setPrefColumnCount(60);
+        text.setWrapText(true);
 
         GridPane g = new GridPane();
         g.setHgap(10); g.setVgap(10);

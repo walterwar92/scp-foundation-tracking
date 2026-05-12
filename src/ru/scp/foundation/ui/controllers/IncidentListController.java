@@ -61,6 +61,7 @@ public class IncidentListController {
 
         colDate.setCellFactory(CellFactories.dateTime());
         colSeverity.setCellFactory(CellFactories.severityBar());
+        colDesc.setCellFactory(CellFactories.wrappingText());
 
         table.setItems(data);
     }
@@ -188,7 +189,9 @@ public class IncidentListController {
         severity.setValue(existing == null ? 3 : existing.severity());
 
         TextArea desc = new TextArea(existing == null ? "" : existing.description());
-        desc.setPrefRowCount(4);
+        desc.setPrefRowCount(5);
+        desc.setPrefColumnCount(50);
+        desc.setWrapText(true);
 
         GridPane g = new GridPane();
         g.setHgap(10); g.setVgap(10);

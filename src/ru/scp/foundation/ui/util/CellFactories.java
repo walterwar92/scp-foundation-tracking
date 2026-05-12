@@ -4,9 +4,11 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
+import javafx.util.Duration;
 import ru.scp.foundation.model.ObjectClass;
 import ru.scp.foundation.util.Lang;
 
@@ -96,6 +98,46 @@ public final class CellFactories {
                 super.updateItem(item, empty);
                 setGraphic(null);
                 setText(empty || item == null ? "" : DT_FMT.format(item));
+            }
+        };
+    }
+
+    /**
+     * Перенос длинного текста в ячейке + tooltip с полным значением при наведении.
+     * Высота строки автоматически подстраивается под содержимое.
+     */
+    public static <S> Callback<TableColumn<S, String>, TableCell<S, String>> wrappingText() {
+        return col -> new TableCell<>() {
+            private final Label label = new Label();
+            {
+                label.setWrapText(true);
+                label.maxWidthProperty().bind(col.widthProperty().subtract(20));
+                label.getStyleClass().add("cell-wrap");
+            }
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null || item.isEmpty()) {
+                    setText(null);
+                    setGraphic(null);
+                    setTooltip(null);
+                    return;
+                }
+                label.setText(item);
+                setGraphic(label);
+                setText(null);
+                // Tooltip только если текст длинный — иначе обычный wrap справится сам
+                if (item.length() > 70) {
+                    Tooltip tip = new Tooltip(item);
+                    tip.setMaxWidth(520);
+                    tip.setWrapText(true);
+                    tip.setShowDelay(Duration.millis(300));
+                    tip.setShowDuration(Duration.seconds(30));
+                    tip.getStyleClass().add("scp-tooltip");
+                    setTooltip(tip);
+                } else {
+                    setTooltip(null);
+                }
             }
         };
     }

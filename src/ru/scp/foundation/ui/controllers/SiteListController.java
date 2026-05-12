@@ -42,6 +42,7 @@ public class SiteListController {
         colLocation.setCellValueFactory(c -> new SimpleStringProperty(DataI18n.t(c.getValue().location())));
         colCap.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().capacity()));
         colSec.setCellValueFactory(c -> new SimpleIntegerProperty(c.getValue().securityLevel()));
+        colLocation.setCellFactory(ru.scp.foundation.ui.util.CellFactories.wrappingText());
         filtered = new FilteredList<>(all, x -> true);
         table.setItems(filtered);
         searchField.textProperty().addListener((o, oV, nV) -> {

@@ -628,3 +628,25 @@
     -fx-border-color: #2a2a2a;
     -fx-border-width: 1 0 0 0;
 }
+
+/* ===== Tooltip (полный текст ячейки при наведении) ===== */
+.tooltip {
+    -fx-background-color: rgba(20, 20, 20, 0.97);
+    -fx-text-fill: #e0e0e0;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+    -fx-font-size: 12px;
+    -fx-padding: 10 14 10 14;
+    -fx-background-radius: 0;
+    -fx-border-color: #FF6B35;
+    -fx-border-width: 1;
+    -fx-border-radius: 0;
+    -fx-effect: dropshadow(gaussian, rgba(200, 16, 46, 0.45), 16, 0.35, 0, 0);
+}
+
+/* Обёрнутая ячейка в TableView */
+.cell-wrap {
+    -fx-text-fill: #e0e0e0;
+    -fx-font-size: 12.5px;
+    -fx-padding: 2 0 2 0;
+    -fx-line-spacing: 1.5;
+}
