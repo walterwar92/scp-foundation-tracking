@@ -103,28 +103,22 @@ public final class CellFactories {
     }
 
     /**
-     * Длинный текст переносится по словам внутри ячейки. При наведении на
-     * ячейку показывается tooltip с полным текстом — настроен на INDEFINITE
-     * показ, чтобы анимированный фон не сбивал событие hover.
+     * Ячейка обрезает длинный текст с многоточием (стандартное поведение
+     * JavaFX TableCell), при наведении показывает полный текст в Tooltip.
      *
-     * Tooltip привязывается к самой ячейке через setTooltip — это работает
-     * стабильнее, чем Tooltip.install на динамически создаваемом Label.
+     * Wrap в ячейке убран намеренно: связка wrap-Label + maxWidth-binding
+     * вызывала layout-thrash и Popup tooltip мигал из-за постоянных
+     * реанкоринг-проходов.
      */
     public static <S> Callback<TableColumn<S, String>, TableCell<S, String>> wrappingText() {
         return col -> new TableCell<>() {
-            private final Label label = new Label();
             private final Tooltip tip = new Tooltip();
             {
-                label.setWrapText(true);
-                label.maxWidthProperty().bind(col.widthProperty().subtract(20));
-                label.getStyleClass().add("cell-wrap");
-                setPrefHeight(Region.USE_COMPUTED_SIZE);
-
                 tip.setMaxWidth(540);
                 tip.setWrapText(true);
-                tip.setShowDelay(Duration.millis(120));
+                tip.setShowDelay(Duration.millis(100));
                 tip.setShowDuration(Duration.INDEFINITE);
-                tip.setHideDelay(Duration.millis(150));
+                tip.setHideDelay(Duration.ZERO);
                 tip.getStyleClass().add("scp-tooltip");
             }
             @Override
@@ -132,13 +126,10 @@ public final class CellFactories {
                 super.updateItem(item, empty);
                 if (empty || item == null || item.isEmpty()) {
                     setText(null);
-                    setGraphic(null);
                     setTooltip(null);
                     return;
                 }
-                label.setText(item);
-                setGraphic(label);
-                setText(null);
+                setText(item);
                 tip.setText(item);
                 setTooltip(tip);
             }
