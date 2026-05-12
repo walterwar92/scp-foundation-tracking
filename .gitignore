@@ -5,6 +5,9 @@ out/
 # Dependencies
 lib/
 
+# Portable DB runtime (downloaded by db-setup.{sh,bat})
+db-runtime/
+
 # Local config (содержит реальный пароль БД)
 config.properties
 
