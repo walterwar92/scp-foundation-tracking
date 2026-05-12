@@ -1,0 +1,110 @@
+/* SCP Foundation — Secure Terminal Theme */
+
+.root {
+    -fx-base: #1a1a1a;
+    -fx-background: #0a0a0a;
+    -fx-control-inner-background: #141414;
+    -fx-accent: #FF6B35;
+    -fx-default-button: #C8102E;
+    -fx-focus-color: #FF6B35;
+    -fx-faint-focus-color: rgba(255, 107, 53, 0.3);
+    -fx-text-fill: #e0e0e0;
+    -fx-font-family: "Consolas", "JetBrains Mono", "Courier New", monospace;
+    -fx-font-size: 13px;
+}
+
+.label { -fx-text-fill: #e0e0e0; }
+.label.header { -fx-font-size: 20px; -fx-text-fill: #FF6B35; -fx-font-weight: bold; }
+.label.subheader { -fx-font-size: 14px; -fx-text-fill: #C8102E; -fx-font-weight: bold; }
+.label.status { -fx-font-size: 11px; -fx-text-fill: #888; }
+
+.text-field, .password-field, .text-area {
+    -fx-background-color: #141414;
+    -fx-border-color: #FF6B35;
+    -fx-border-width: 1;
+    -fx-text-fill: #e0e0e0;
+    -fx-prompt-text-fill: #555;
+    -fx-padding: 8 12 8 12;
+}
+.text-field:focused, .password-field:focused, .text-area:focused {
+    -fx-border-color: #C8102E;
+    -fx-effect: dropshadow(gaussian, #C8102E, 8, 0.5, 0, 0);
+}
+
+.button {
+    -fx-background-color: transparent;
+    -fx-border-color: #FF6B35;
+    -fx-border-width: 1;
+    -fx-text-fill: #FF6B35;
+    -fx-padding: 8 18 8 18;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+}
+.button:hover {
+    -fx-background-color: #FF6B35;
+    -fx-text-fill: #0a0a0a;
+    -fx-effect: dropshadow(gaussian, #FF6B35, 10, 0.6, 0, 0);
+}
+.button:pressed { -fx-background-color: #C8102E; -fx-border-color: #C8102E; }
+.button.primary { -fx-border-color: #C8102E; -fx-text-fill: #C8102E; }
+.button.primary:hover { -fx-background-color: #C8102E; -fx-text-fill: #fff; }
+.button.danger { -fx-border-color: #aa0000; -fx-text-fill: #ff5555; }
+
+.table-view {
+    -fx-background-color: #0a0a0a;
+    -fx-border-color: #FF6B35;
+    -fx-border-width: 1;
+}
+.table-view .column-header,
+.table-view .column-header-background {
+    -fx-background-color: #1a1a1a;
+    -fx-text-fill: #FF6B35;
+    -fx-border-color: #FF6B35;
+}
+.table-view .column-header .label {
+    -fx-text-fill: #FF6B35;
+    -fx-font-weight: bold;
+}
+.table-row-cell {
+    -fx-background-color: #0a0a0a;
+    -fx-text-fill: #e0e0e0;
+    -fx-border-color: transparent transparent #222 transparent;
+}
+.table-row-cell:odd { -fx-background-color: #111; }
+.table-row-cell:selected {
+    -fx-background-color: rgba(255, 107, 53, 0.25);
+    -fx-text-fill: #fff;
+}
+
+.sidebar {
+    -fx-background-color: #0a0a0a;
+    -fx-border-color: transparent #FF6B35 transparent transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 12;
+    -fx-spacing: 6;
+}
+.sidebar .button {
+    -fx-pref-width: 200;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.status-bar {
+    -fx-background-color: #0a0a0a;
+    -fx-border-color: #FF6B35 transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 6 12 6 12;
+}
+
+.login-card {
+    -fx-background-color: rgba(20, 20, 20, 0.92);
+    -fx-border-color: #FF6B35;
+    -fx-border-width: 2;
+    -fx-padding: 36;
+    -fx-effect: dropshadow(gaussian, #C8102E, 24, 0.4, 0, 0);
+}
+
+.boot-text {
+    -fx-text-fill: #FF6B35;
+    -fx-font-size: 14px;
+    -fx-font-family: "Consolas", monospace;
+}
