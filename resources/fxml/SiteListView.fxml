@@ -1,7 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.Label?>
-<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="ru.scp.foundation.ui.controllers.SiteListController">
-    <Label text="CONTAINMENT SITES — placeholder"/>
-</VBox>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ru.scp.foundation.ui.controllers.SiteListController">
+    <top>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <padding><Insets top="10" right="14" bottom="10" left="14"/></padding>
+            <Label text="CONTAINMENT SITES" styleClass="header"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <TextField fx:id="searchField" promptText="Search" prefWidth="240"/>
+            <Button text="Refresh" onAction="#onRefresh"/>
+            <Button fx:id="addBtn"  text="Add"    onAction="#onAdd"/>
+            <Button fx:id="editBtn" text="Edit"   onAction="#onEdit"/>
+            <Button fx:id="delBtn"  text="Delete" onAction="#onDelete" styleClass="danger"/>
+        </HBox>
+    </top>
+    <center>
+        <TableView fx:id="table">
+            <columns>
+                <TableColumn fx:id="colCode"     text="Code"     prefWidth="120"/>
+                <TableColumn fx:id="colLocation" text="Location" prefWidth="300"/>
+                <TableColumn fx:id="colCap"      text="Capacity" prefWidth="100"/>
+                <TableColumn fx:id="colSec"      text="Security Level" prefWidth="140"/>
+            </columns>
+        </TableView>
+    </center>
+</BorderPane>
