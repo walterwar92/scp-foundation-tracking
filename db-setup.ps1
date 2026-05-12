@@ -112,7 +112,11 @@ if (Test-Path (Join-Path $PgData 'PG_VERSION')) {
     $env:LANG = 'C'
     $env:LC_MESSAGES = 'C'
     try {
-        & $initdb -D $PgData -U postgres "--pwfile=$pwFile" -E UTF8 --locale=C --lc-messages=C --auth=md5
+        # Кластер инициализируется в SQL_ASCII — обход бага Postgres-on-Windows,
+        # когда имя OS-пользователя в cp1251 ("Роман") вставляется в UTF-8 системные
+        # таблицы и падает на post-bootstrap. Наша рабочая БД (создаётся ниже) явно
+        # с UTF8 через template0.
+        & $initdb -D $PgData -U postgres "--pwfile=$pwFile" -E SQL_ASCII --no-locale --auth=md5
         if ($LASTEXITCODE -ne 0) {
             Write-Error "initdb не удался"
         }
@@ -173,7 +177,7 @@ Write-Host "[db-setup] Создание роли и БД..."
 Invoke-Sql 'org.postgresql.Driver' "jdbc:postgresql://localhost:$PgPort/postgres" `
     'postgres' $PgPass '-c' "CREATE ROLE $PgUser LOGIN PASSWORD '$PgPass' CREATEDB" $true
 Invoke-Sql 'org.postgresql.Driver' "jdbc:postgresql://localhost:$PgPort/postgres" `
-    'postgres' $PgPass '-c' "CREATE DATABASE $PgDbName OWNER $PgUser" $true
+    'postgres' $PgPass '-c' "CREATE DATABASE $PgDbName OWNER $PgUser ENCODING 'UTF8' LC_COLLATE 'C' LC_CTYPE 'C' TEMPLATE template0" $true
 
 # ============== 6. Применение SQL ==============
 Write-Host "[db-setup] Применение schema/constraints/seed (Postgres)..."

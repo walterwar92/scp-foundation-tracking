@@ -121,7 +121,7 @@ invoke_sql org.postgresql.Driver \
 invoke_sql org.postgresql.Driver \
     "jdbc:postgresql://localhost:$PG_PORT/postgres" \
     postgres "$PG_PASS" \
-    -c "CREATE DATABASE $PG_DB_NAME OWNER $PG_USER" true
+    -c "CREATE DATABASE $PG_DB_NAME OWNER $PG_USER ENCODING 'UTF8' LC_COLLATE 'C' LC_CTYPE 'C' TEMPLATE template0" true
 
 # ============== 6. Применение SQL ==============
 echo "[db-setup] Применение schema/constraints/seed (Postgres)..."
