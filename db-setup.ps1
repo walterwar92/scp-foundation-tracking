@@ -33,6 +33,29 @@ if (-not (Test-Path 'lib')) {
 
 New-Item -ItemType Directory -Force -Path $DbDir | Out-Null
 
+# ============== 0. xz.exe (нужен для .txz, который Windows tar сам не умеет) ==============
+$XzExe = Join-Path $DbDir 'xz.exe'
+if (-not (Test-Path $XzExe)) {
+    Write-Host "[db-setup] Загрузка xz-utils для распаковки PostgreSQL..."
+    $xzZip = Join-Path $DbDir 'xz.zip'
+    curl.exe -fSL -o $xzZip 'https://github.com/tukaani-project/xz/releases/download/v5.4.6/xz-5.4.6-windows.zip'
+    if ($LASTEXITCODE -ne 0) { Write-Error 'Скачивание xz-utils не удалось' }
+    $xzExtract = Join-Path $DbDir 'xz-extract'
+    if (Test-Path $xzExtract) { Remove-Item -Recurse -Force $xzExtract }
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($xzZip, $xzExtract)
+    $xzFound = Get-ChildItem -Path $xzExtract -Recurse -Filter 'xz.exe' |
+        Where-Object { $_.Directory.Name -match 'x86-64|x64' } |
+        Select-Object -First 1
+    if (-not $xzFound) {
+        $xzFound = Get-ChildItem -Path $xzExtract -Recurse -Filter 'xz.exe' | Select-Object -First 1
+    }
+    if (-not $xzFound) { Write-Error 'xz.exe не найден в архиве' }
+    Copy-Item $xzFound.FullName $XzExe
+    Remove-Item -Recurse -Force $xzExtract
+    Remove-Item -Force $xzZip
+}
+
 # ============== 1. Скачиваем portable PostgreSQL ==============
 if (Test-Path (Join-Path $PgDir 'bin\postgres.exe')) {
     Write-Host "[db-setup] PostgreSQL уже распакован"
@@ -51,9 +74,14 @@ if (Test-Path (Join-Path $PgDir 'bin\postgres.exe')) {
 
     New-Item -ItemType Directory -Force -Path $PgDir | Out-Null
     $txz = Get-ChildItem -Path $jarExtract -Filter '*.txz' | Select-Object -First 1
-    Write-Host "[db-setup] Распаковка TXZ $($txz.Name)..."
-    & tar.exe -xf $txz.FullName -C $PgDir
-    if ($LASTEXITCODE -ne 0) { Write-Error "Распаковка TXZ не удалась" }
+    Write-Host "[db-setup] Декомпрессия XZ $($txz.Name)..."
+    # xz -dk оставляет исходный, создаёт файл без .txz
+    & $XzExe -dk -- $txz.FullName
+    if ($LASTEXITCODE -ne 0) { Write-Error "Декомпрессия XZ не удалась" }
+    $tarPath = $txz.FullName -replace '\.txz$', ''
+    Write-Host "[db-setup] Распаковка TAR..."
+    & tar.exe -xf $tarPath -C $PgDir
+    if ($LASTEXITCODE -ne 0) { Write-Error "Распаковка TAR не удалась" }
 
     Remove-Item -Recurse -Force $jarExtract
     Remove-Item -Force $jarPath

@@ -44,6 +44,7 @@ command -v java  >/dev/null 2>&1 || { echo "ERROR: java не найдена. С�
 command -v curl  >/dev/null 2>&1 || { echo "ERROR: curl не найден"; exit 1; }
 command -v tar   >/dev/null 2>&1 || { echo "ERROR: tar не найден"; exit 1; }
 command -v unzip >/dev/null 2>&1 || { echo "ERROR: unzip не найден"; exit 1; }
+command -v xz    >/dev/null 2>&1 || { echo "ERROR: xz не найден. Установите xz-utils (apt install xz-utils / brew install xz)"; exit 1; }
 
 [ -d lib ] || { echo "ERROR: lib/ не существует. Сначала ./setup.sh"; exit 1; }
 
