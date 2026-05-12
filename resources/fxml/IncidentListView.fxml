@@ -1,7 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.Label?>
-<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="ru.scp.foundation.ui.controllers.IncidentListController">
-    <Label text="INCIDENTS — placeholder"/>
-</VBox>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ru.scp.foundation.ui.controllers.IncidentListController">
+    <top>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <padding><Insets top="10" right="14" bottom="10" left="14"/></padding>
+            <Label text="INCIDENTS" styleClass="header"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="From:"/> <DatePicker fx:id="fromDate"/>
+            <Label text="To:"/>   <DatePicker fx:id="toDate"/>
+            <Button text="Apply"   onAction="#onApplyFilter"/>
+            <Button text="Reset"   onAction="#onResetFilter"/>
+            <Button fx:id="addBtn"  text="Add"    onAction="#onAdd"/>
+            <Button fx:id="editBtn" text="Edit"   onAction="#onEdit"/>
+            <Button fx:id="delBtn"  text="Delete" onAction="#onDelete" styleClass="danger"/>
+        </HBox>
+    </top>
+    <center>
+        <TableView fx:id="table">
+            <columns>
+                <TableColumn fx:id="colDate"     text="Occurred"   prefWidth="160"/>
+                <TableColumn fx:id="colScp"      text="SCP"        prefWidth="120"/>
+                <TableColumn fx:id="colSite"     text="Site"       prefWidth="120"/>
+                <TableColumn fx:id="colMtf"      text="MTF"        prefWidth="140"/>
+                <TableColumn fx:id="colSeverity" text="Severity"   prefWidth="80"/>
+                <TableColumn fx:id="colDesc"     text="Description" prefWidth="400"/>
+            </columns>
+        </TableView>
+    </center>
+</BorderPane>
