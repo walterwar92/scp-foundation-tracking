@@ -38,13 +38,19 @@ New-Item -ItemType Directory -Force -Path $DbDir | Out-Null
 # commons-compress + xz-java читают .txz напрямую.
 $ToolsDir = Join-Path $DbDir 'tools'
 New-Item -ItemType Directory -Force -Path $ToolsDir | Out-Null
-$CommonsJar = Join-Path $ToolsDir 'commons-compress-1.27.1.jar'
-$XzJar      = Join-Path $ToolsDir 'xz-1.10.jar'
+$CommonsCompressJar = Join-Path $ToolsDir 'commons-compress-1.27.1.jar'
+$CommonsIoJar       = Join-Path $ToolsDir 'commons-io-2.16.1.jar'
+$XzJar              = Join-Path $ToolsDir 'xz-1.10.jar'
 
-if (-not (Test-Path $CommonsJar)) {
+if (-not (Test-Path $CommonsCompressJar)) {
     Write-Host "[db-setup] Загрузка commons-compress (для распаковки .txz)..."
-    curl.exe -fSL -o $CommonsJar 'https://repo.maven.apache.org/maven2/org/apache/commons/commons-compress/1.27.1/commons-compress-1.27.1.jar'
+    curl.exe -fSL -o $CommonsCompressJar 'https://repo.maven.apache.org/maven2/org/apache/commons/commons-compress/1.27.1/commons-compress-1.27.1.jar'
     if ($LASTEXITCODE -ne 0) { Write-Error 'Скачивание commons-compress не удалось' }
+}
+if (-not (Test-Path $CommonsIoJar)) {
+    Write-Host "[db-setup] Загрузка commons-io (зависимость commons-compress)..."
+    curl.exe -fSL -o $CommonsIoJar 'https://repo.maven.apache.org/maven2/commons-io/commons-io/2.16.1/commons-io-2.16.1.jar'
+    if ($LASTEXITCODE -ne 0) { Write-Error 'Скачивание commons-io не удалось' }
 }
 if (-not (Test-Path $XzJar)) {
     Write-Host "[db-setup] Загрузка xz-java..."
@@ -52,12 +58,14 @@ if (-not (Test-Path $XzJar)) {
     if ($LASTEXITCODE -ne 0) { Write-Error 'Скачивание xz-java не удалось' }
 }
 
+$ToolsCp = "$CommonsCompressJar;$CommonsIoJar;$XzJar"
+
 # Компилируем TxzExtractor если ещё не собран
 $TxzClass = 'out\ru\scp\foundation\util\TxzExtractor.class'
 if (-not (Test-Path $TxzClass)) {
     Write-Host "[db-setup] Компилирую TxzExtractor..."
     New-Item -ItemType Directory -Force -Path 'out' | Out-Null
-    & javac -encoding UTF-8 -cp "$CommonsJar;$XzJar" -d out 'src\ru\scp\foundation\util\TxzExtractor.java'
+    & javac -encoding UTF-8 -cp $ToolsCp -d out 'src\ru\scp\foundation\util\TxzExtractor.java'
     if ($LASTEXITCODE -ne 0) { Write-Error 'Компиляция TxzExtractor не удалась' }
 }
 
@@ -80,7 +88,7 @@ if (Test-Path (Join-Path $PgDir 'bin\postgres.exe')) {
     New-Item -ItemType Directory -Force -Path $PgDir | Out-Null
     $txz = Get-ChildItem -Path $jarExtract -Filter '*.txz' | Select-Object -First 1
     Write-Host "[db-setup] Распаковка $($txz.Name) через TxzExtractor (Java)..."
-    & java -cp "out;$CommonsJar;$XzJar" ru.scp.foundation.util.TxzExtractor $txz.FullName $PgDir
+    & java -cp "out;$ToolsCp" ru.scp.foundation.util.TxzExtractor $txz.FullName $PgDir
     if ($LASTEXITCODE -ne 0) { Write-Error "Распаковка TXZ не удалась" }
 
     Remove-Item -Recurse -Force $jarExtract
