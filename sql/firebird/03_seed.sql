@@ -49,11 +49,13 @@ INSERT INTO procedure_revisions (scp_id, revision_number, revision_date, procedu
 INSERT INTO procedure_revisions (scp_id, revision_number, revision_date, procedure_text, approved_by_id) VALUES (3, 1, '1935-04-05', 'Dialogue protocols.', 2);
 INSERT INTO procedure_revisions (scp_id, revision_number, revision_date, procedure_text, approved_by_id) VALUES (5, 1, '1962-12-01', 'Refine setting documentation.', 1);
 
--- Хеши обновить после Batch 9
-INSERT INTO users (personnel_id, login, password_hash, salt, "ROLE") VALUES (1, 'admin',    'REPLACE_AFTER_BATCH_9_FOR_admin_____________________________0000', 'salt_admin_REPLACE_32_chars_____', 'O5');
-INSERT INTO users (personnel_id, login, password_hash, salt, "ROLE") VALUES (2, 'sglass',   'REPLACE_AFTER_BATCH_9_FOR_sglass____________________________0000', 'salt_sglass_REPLACE_32_chars____', 'RESEARCHER');
-INSERT INTO users (personnel_id, login, password_hash, salt, "ROLE") VALUES (3, 'dnavarro', 'REPLACE_AFTER_BATCH_9_FOR_dnavarro__________________________0000', 'salt_dnavarro_REPLACE_32_chars__', 'RESEARCHER');
-INSERT INTO users (personnel_id, login, password_hash, salt, "ROLE") VALUES (4, 'evolkov',  'REPLACE_AFTER_BATCH_9_FOR_evolkov___________________________0000', 'salt_evolkov_REPLACE_32_chars___', 'RESEARCHER');
-INSERT INTO users (personnel_id, login, password_hash, salt, "ROLE") VALUES (6, 'ytanaka',  'REPLACE_AFTER_BATCH_9_FOR_ytanaka___________________________0000', 'salt_ytanaka_REPLACE_32_chars___', 'RESEARCHER');
+-- Хеши SHA-256(salt || password) сгенерированы через PasswordHasher (Batch 9).
+-- Пароли: admin/scp-foundation, sglass/euclid-1989, dnavarro/alpha-bravo,
+--         evolkov/containment-66, ytanaka/research-2024.
+INSERT INTO users (personnel_id, login, password_hash, salt, "ROLE") VALUES (1, 'admin',    '162fd61c7339ad5e64f3fe16a70cd74efdd8d85dc4ec2045b2c62b15134e5dcd', '8be3f19ea48185fc6e97bb0a91129747', 'O5');
+INSERT INTO users (personnel_id, login, password_hash, salt, "ROLE") VALUES (2, 'sglass',   '6b0baa7b344774f0174258e3e7d9df62bc6898b9738b2b61e9657df7b366f922', 'a154008cee3c47e0d0ee4eab4f5adca6', 'RESEARCHER');
+INSERT INTO users (personnel_id, login, password_hash, salt, "ROLE") VALUES (3, 'dnavarro', '24bd38e2d4cf775c27572bce26eb6f3f9cd096c81a3b16a621c58680cc4e8013', '97bf57a8bba5436506b9b0f97c402c68', 'RESEARCHER');
+INSERT INTO users (personnel_id, login, password_hash, salt, "ROLE") VALUES (4, 'evolkov',  '4e91f95bdf7d90826ac77ec541c3713c672e97a87668123436452aee83d7eb08', 'b03103ac7def653127ac9db77ccaa6f5', 'RESEARCHER');
+INSERT INTO users (personnel_id, login, password_hash, salt, "ROLE") VALUES (6, 'ytanaka',  'd4ca647a49ecc7eaf8badea5ae360eaaf1959809fa2ecd19c5fd42b897d2a0d8', '0756205e08b188dbe8724c2cd1d907f7', 'RESEARCHER');
 
 COMMIT;
