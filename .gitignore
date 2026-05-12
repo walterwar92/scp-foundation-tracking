@@ -1,0 +1,24 @@
+# Build output
+out/
+*.class
+
+# Dependencies
+lib/
+
+# Local config (содержит реальный пароль БД)
+config.properties
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
