@@ -32,7 +32,7 @@ MAVEN="https://repo.maven.apache.org/maven2"
 
 declare -a JARS=(
     "$MAVEN/org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar"
-    "$MAVEN/org/firebirdsql/jdbc/jaybird/5.0.4.java17/jaybird-5.0.4.java17.jar"
+    "$MAVEN/org/firebirdsql/jdbc/jaybird/5.0.4.java11/jaybird-5.0.4.java11.jar"
     "$MAVEN/org/openjfx/javafx-base/21.0.2/javafx-base-21.0.2-$FX_OS.jar"
     "$MAVEN/org/openjfx/javafx-graphics/21.0.2/javafx-graphics-21.0.2-$FX_OS.jar"
     "$MAVEN/org/openjfx/javafx-controls/21.0.2/javafx-controls-21.0.2-$FX_OS.jar"

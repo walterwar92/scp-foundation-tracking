@@ -26,11 +26,17 @@ if not exist lib mkdir lib
 set "MAVEN=https://repo.maven.apache.org/maven2"
 
 call :download "%MAVEN%/org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar"
-call :download "%MAVEN%/org/firebirdsql/jdbc/jaybird/5.0.4.java17/jaybird-5.0.4.java17.jar"
+if errorlevel 1 exit /b 1
+call :download "%MAVEN%/org/firebirdsql/jdbc/jaybird/5.0.4.java11/jaybird-5.0.4.java11.jar"
+if errorlevel 1 exit /b 1
 call :download "%MAVEN%/org/openjfx/javafx-base/21.0.2/javafx-base-21.0.2-%FX_OS%.jar"
+if errorlevel 1 exit /b 1
 call :download "%MAVEN%/org/openjfx/javafx-graphics/21.0.2/javafx-graphics-21.0.2-%FX_OS%.jar"
+if errorlevel 1 exit /b 1
 call :download "%MAVEN%/org/openjfx/javafx-controls/21.0.2/javafx-controls-21.0.2-%FX_OS%.jar"
+if errorlevel 1 exit /b 1
 call :download "%MAVEN%/org/openjfx/javafx-fxml/21.0.2/javafx-fxml-21.0.2-%FX_OS%.jar"
+if errorlevel 1 exit /b 1
 
 if not exist config.properties (
     copy config.example.properties config.properties >nul
