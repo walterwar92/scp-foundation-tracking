@@ -1,7 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.Label?>
-<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="ru.scp.foundation.ui.controllers.ProcedureRevisionsController">
-    <Label text="PROCEDURE REVISIONS — placeholder"/>
-</VBox>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ru.scp.foundation.ui.controllers.ProcedureRevisionsController">
+    <top>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <padding><Insets top="10" right="14" bottom="10" left="14"/></padding>
+            <Label text="PROCEDURE REVISIONS" styleClass="header"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="addBtn"  text="Add revision"  onAction="#onAdd"/>
+            <Button fx:id="editBtn" text="Edit revision" onAction="#onEdit"/>
+            <Button fx:id="delBtn"  text="Delete"        onAction="#onDelete" styleClass="danger"/>
+        </HBox>
+    </top>
+    <center>
+        <SplitPane dividerPositions="0.3, 0.6">
+            <VBox>
+                <Label text="SCP" styleClass="subheader">
+                    <padding><Insets left="10" top="6"/></padding>
+                </Label>
+                <ListView fx:id="scpList" VBox.vgrow="ALWAYS"/>
+            </VBox>
+            <VBox>
+                <Label text="Revisions" styleClass="subheader">
+                    <padding><Insets left="10" top="6"/></padding>
+                </Label>
+                <TableView fx:id="revTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colRev"  text="#"        prefWidth="50"/>
+                        <TableColumn fx:id="colDate" text="Date"     prefWidth="120"/>
+                        <TableColumn fx:id="colApp"  text="Approved" prefWidth="200"/>
+                    </columns>
+                </TableView>
+            </VBox>
+            <VBox>
+                <Label text="Procedure text" styleClass="subheader">
+                    <padding><Insets left="10" top="6"/></padding>
+                </Label>
+                <TextArea fx:id="textArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS"/>
+            </VBox>
+        </SplitPane>
+    </center>
+</BorderPane>
