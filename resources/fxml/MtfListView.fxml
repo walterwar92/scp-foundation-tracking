@@ -8,40 +8,40 @@
     <top>
         <HBox styleClass="toolbar-bar">
             <Label text="▸" styleClass="toolbar-prefix"/>
-            <Label text="MOBILE TASK FORCES" styleClass="toolbar-title"/>
+            <Label text="%title.mtf" styleClass="toolbar-title"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Button text="Refresh" onAction="#onRefresh"/>
-            <Button fx:id="addTeamBtn"  text="Add team"     onAction="#onAddTeam"/>
-            <Button fx:id="editTeamBtn" text="Edit team"    onAction="#onEditTeam"/>
-            <Button fx:id="delTeamBtn"  text="Delete team"  onAction="#onDeleteTeam" styleClass="danger"/>
+            <Button text="%btn.refresh" onAction="#onRefresh"/>
+            <Button fx:id="addTeamBtn"  text="%btn.add.team"     onAction="#onAddTeam"/>
+            <Button fx:id="editTeamBtn" text="%btn.edit.team"    onAction="#onEditTeam"/>
+            <Button fx:id="delTeamBtn"  text="%btn.delete.team"  onAction="#onDeleteTeam" styleClass="danger"/>
         </HBox>
     </top>
     <center>
         <SplitPane dividerPositions="0.5">
             <VBox>
-                <Label text="Teams" styleClass="subheader">
+                <Label text="%col.teams.label" styleClass="subheader">
                     <padding><Insets left="10" top="6"/></padding>
                 </Label>
                 <TableView fx:id="teamsTable" VBox.vgrow="ALWAYS">
                     <columns>
-                        <TableColumn fx:id="colCallsign" text="Callsign"        prefWidth="160"/>
-                        <TableColumn fx:id="colSpec"     text="Specialization"  prefWidth="280"/>
-                        <TableColumn fx:id="colBase"    text="Base site"        prefWidth="120"/>
+                        <TableColumn fx:id="colCallsign" text="%col.callsign"        prefWidth="160"/>
+                        <TableColumn fx:id="colSpec"     text="%col.spec"  prefWidth="280"/>
+                        <TableColumn fx:id="colBase"    text="%col.baseSite"        prefWidth="120"/>
                     </columns>
                 </TableView>
             </VBox>
             <VBox>
                 <HBox styleClass="toolbar-bar">
                     <Label text="▸" styleClass="toolbar-prefix"/>
-                    <Label text="Members" styleClass="toolbar-title"/>
+                    <Label text="%col.members.label" styleClass="toolbar-title"/>
                     <Region HBox.hgrow="ALWAYS"/>
-                    <Button fx:id="addMemberBtn" text="Add member"   onAction="#onAddMember"/>
-                    <Button fx:id="delMemberBtn" text="Remove"       onAction="#onRemoveMember" styleClass="danger"/>
+                    <Button fx:id="addMemberBtn" text="%btn.add.member"   onAction="#onAddMember"/>
+                    <Button fx:id="delMemberBtn" text="%btn.remove"       onAction="#onRemoveMember" styleClass="danger"/>
                 </HBox>
                 <TableView fx:id="membersTable" VBox.vgrow="ALWAYS">
                     <columns>
-                        <TableColumn fx:id="colMemberName" text="Personnel" prefWidth="220"/>
-                        <TableColumn fx:id="colJoined"     text="Joined"    prefWidth="120"/>
+                        <TableColumn fx:id="colMemberName" text="%col.member" prefWidth="220"/>
+                        <TableColumn fx:id="colJoined"     text="%col.joined"    prefWidth="120"/>
                     </columns>
                 </TableView>
             </VBox>

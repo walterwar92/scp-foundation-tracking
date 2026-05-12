@@ -8,22 +8,22 @@
     <top>
         <HBox styleClass="toolbar-bar">
             <Label text="▸" styleClass="toolbar-prefix"/>
-            <Label text="CONTAINMENT SITES" styleClass="toolbar-title"/>
+            <Label text="%title.sites" styleClass="toolbar-title"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <TextField fx:id="searchField" promptText="Search" prefWidth="240"/>
-            <Button text="Refresh" onAction="#onRefresh"/>
-            <Button fx:id="addBtn"  text="Add"    onAction="#onAdd"/>
-            <Button fx:id="editBtn" text="Edit"   onAction="#onEdit"/>
-            <Button fx:id="delBtn"  text="Delete" onAction="#onDelete" styleClass="danger"/>
+            <TextField fx:id="searchField" promptText="%search.sites" prefWidth="240"/>
+            <Button text="%btn.refresh" onAction="#onRefresh"/>
+            <Button fx:id="addBtn"  text="%btn.add"    onAction="#onAdd"/>
+            <Button fx:id="editBtn" text="%btn.edit"   onAction="#onEdit"/>
+            <Button fx:id="delBtn"  text="%btn.delete" onAction="#onDelete" styleClass="danger"/>
         </HBox>
     </top>
     <center>
         <TableView fx:id="table">
             <columns>
-                <TableColumn fx:id="colCode"     text="Code"     prefWidth="120"/>
-                <TableColumn fx:id="colLocation" text="Location" prefWidth="300"/>
-                <TableColumn fx:id="colCap"      text="Capacity" prefWidth="100"/>
-                <TableColumn fx:id="colSec"      text="Security Level" prefWidth="140"/>
+                <TableColumn fx:id="colCode"     text="%col.code"     prefWidth="120"/>
+                <TableColumn fx:id="colLocation" text="%col.location" prefWidth="300"/>
+                <TableColumn fx:id="colCap"      text="%col.capacity" prefWidth="100"/>
+                <TableColumn fx:id="colSec"      text="%col.securityLevel" prefWidth="140"/>
             </columns>
         </TableView>
     </center>

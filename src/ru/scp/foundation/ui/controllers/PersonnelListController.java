@@ -16,8 +16,10 @@ import ru.scp.foundation.dao.PersonnelDao;
 import ru.scp.foundation.model.ContainmentSite;
 import ru.scp.foundation.model.Personnel;
 import ru.scp.foundation.ui.util.Dialogs;
+import ru.scp.foundation.util.Lang;
 
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +86,7 @@ public class PersonnelListController {
             all.setAll(dao.findAll());
             table.refresh();
         } catch (SQLException e) {
-            Dialogs.error("Ошибка БД", e.getMessage());
+            Dialogs.error(Lang.t("msg.err.db"), e.getMessage());
         }
     }
 
@@ -94,36 +96,36 @@ public class PersonnelListController {
     private void onAdd() {
         openDialog(null).ifPresent(p -> {
             try { dao.insert(p); reload(); }
-            catch (SQLException e) { Dialogs.error("Ошибка вставки", e.getMessage()); }
+            catch (SQLException e) { Dialogs.error(Lang.t("msg.err.insert"), e.getMessage()); }
         });
     }
 
     @FXML
     private void onEdit() {
         Personnel sel = table.getSelectionModel().getSelectedItem();
-        if (sel == null) { Dialogs.warn("Edit", "Выберите запись"); return; }
+        if (sel == null) { Dialogs.warn(Lang.t("btn.edit"), Lang.t("msg.warn.select")); return; }
         edit(sel);
     }
 
     private void edit(Personnel sel) {
         openDialog(sel).ifPresent(p -> {
             try { dao.update(p); reload(); }
-            catch (SQLException e) { Dialogs.error("Ошибка обновления", e.getMessage()); }
+            catch (SQLException e) { Dialogs.error(Lang.t("msg.err.update"), e.getMessage()); }
         });
     }
 
     @FXML
     private void onDelete() {
         Personnel sel = table.getSelectionModel().getSelectedItem();
-        if (sel == null) { Dialogs.warn("Delete", "Выберите запись"); return; }
-        if (!Dialogs.confirm("Удалить", "Удалить " + sel.fullName() + "?")) return;
+        if (sel == null) { Dialogs.warn(Lang.t("btn.delete"), Lang.t("msg.warn.select")); return; }
+        if (!Dialogs.confirm(Lang.t("msg.delete.title"), MessageFormat.format(Lang.t("msg.delete.personnel"), sel.fullName()))) return;
         try { dao.delete(sel.id()); reload(); }
-        catch (SQLException e) { Dialogs.error("Ошибка удаления", e.getMessage()); }
+        catch (SQLException e) { Dialogs.error(Lang.t("msg.err.delete"), e.getMessage()); }
     }
 
     private Optional<Personnel> openDialog(Personnel existing) {
         Dialog<Personnel> d = new Dialog<>();
-        d.setTitle(existing == null ? "Add Personnel" : "Edit " + existing.fullName());
+        d.setTitle(existing == null ? Lang.t("dlg.personnel.add") : Lang.t("dlg.personnel.edit") + " " + existing.fullName());
         TextField name = new TextField(existing == null ? "" : existing.fullName());
         TextField position = new TextField(existing == null ? "" : existing.position());
         ComboBox<Integer> clearance = new ComboBox<>(FXCollections.observableArrayList(0, 1, 2, 3, 4, 5));
@@ -143,17 +145,17 @@ public class PersonnelListController {
         g.setHgap(10); g.setVgap(10);
         g.setPadding(new javafx.geometry.Insets(20));
         int r = 0;
-        g.add(new Label("Full name:"),   0, r); g.add(name,      1, r++);
-        g.add(new Label("Position:"),    0, r); g.add(position,  1, r++);
-        g.add(new Label("Clearance:"),   0, r); g.add(clearance, 1, r++);
-        g.add(new Label("Base site:"),   0, r); g.add(siteCb,    1, r++);
+        g.add(new Label(Lang.t("dlg.field.fullName")),   0, r); g.add(name,      1, r++);
+        g.add(new Label(Lang.t("dlg.field.position")),    0, r); g.add(position,  1, r++);
+        g.add(new Label(Lang.t("dlg.field.clearance")),   0, r); g.add(clearance, 1, r++);
+        g.add(new Label(Lang.t("dlg.field.baseSite")),   0, r); g.add(siteCb,    1, r++);
         d.getDialogPane().setContent(g);
         d.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         d.getDialogPane().getStylesheets().add(getClass().getResource("/css/scp.css").toExternalForm());
         d.setResultConverter(btn -> {
             if (btn != ButtonType.OK) return null;
             if (name.getText().isBlank() || position.getText().isBlank() || siteCb.getValue() == null) {
-                Dialogs.warn("Validation", "Заполните все обязательные поля");
+                Dialogs.warn(Lang.t("msg.validation"), Lang.t("msg.required"));
                 return null;
             }
             return new Personnel(

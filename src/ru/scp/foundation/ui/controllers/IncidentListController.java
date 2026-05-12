@@ -14,8 +14,10 @@ import ru.scp.foundation.dao.*;
 import ru.scp.foundation.model.*;
 import ru.scp.foundation.ui.util.CellFactories;
 import ru.scp.foundation.ui.util.Dialogs;
+import ru.scp.foundation.util.Lang;
 
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -86,7 +88,7 @@ public class IncidentListController {
             data.setAll(applyClearanceFilter(dao.findAll()));
             table.refresh();
         } catch (SQLException e) {
-            Dialogs.error("Ошибка БД", e.getMessage());
+            Dialogs.error(Lang.t("msg.err.db"), e.getMessage());
         }
     }
 
@@ -105,11 +107,11 @@ public class IncidentListController {
     private void onApplyFilter() {
         LocalDate from = fromDate.getValue();
         LocalDate to = toDate.getValue();
-        if (from == null || to == null) { Dialogs.warn("Filter", "Укажите обе даты"); return; }
+        if (from == null || to == null) { Dialogs.warn(Lang.t("btn.apply"), Lang.t("msg.warn.bothDates")); return; }
         try {
             data.setAll(applyClearanceFilter(dao.findInRange(from, to.plusDays(1))));
         } catch (SQLException e) {
-            Dialogs.error("Ошибка БД", e.getMessage());
+            Dialogs.error(Lang.t("msg.err.db"), e.getMessage());
         }
     }
 
@@ -124,32 +126,32 @@ public class IncidentListController {
     private void onAdd() {
         openDialog(null).ifPresent(i -> {
             try { dao.insert(i); reload(); }
-            catch (SQLException e) { Dialogs.error("Ошибка вставки", e.getMessage()); }
+            catch (SQLException e) { Dialogs.error(Lang.t("msg.err.insert"), e.getMessage()); }
         });
     }
 
     @FXML
     private void onEdit() {
         Incident sel = table.getSelectionModel().getSelectedItem();
-        if (sel == null) { Dialogs.warn("Edit", "Выберите запись"); return; }
+        if (sel == null) { Dialogs.warn(Lang.t("btn.edit"), Lang.t("msg.warn.select")); return; }
         openDialog(sel).ifPresent(i -> {
             try { dao.update(i); reload(); }
-            catch (SQLException e) { Dialogs.error("Ошибка обновления", e.getMessage()); }
+            catch (SQLException e) { Dialogs.error(Lang.t("msg.err.update"), e.getMessage()); }
         });
     }
 
     @FXML
     private void onDelete() {
         Incident sel = table.getSelectionModel().getSelectedItem();
-        if (sel == null) { Dialogs.warn("Delete", "Выберите запись"); return; }
-        if (!Dialogs.confirm("Удалить", "Удалить инцидент?")) return;
+        if (sel == null) { Dialogs.warn(Lang.t("btn.delete"), Lang.t("msg.warn.select")); return; }
+        if (!Dialogs.confirm(Lang.t("msg.delete.title"), Lang.t("msg.delete.incident"))) return;
         try { dao.delete(sel.id()); reload(); }
-        catch (SQLException e) { Dialogs.error("Ошибка удаления", e.getMessage()); }
+        catch (SQLException e) { Dialogs.error(Lang.t("msg.err.delete"), e.getMessage()); }
     }
 
     private Optional<Incident> openDialog(Incident existing) {
         Dialog<Incident> d = new Dialog<>();
-        d.setTitle(existing == null ? "Add incident" : "Edit incident");
+        d.setTitle(existing == null ? Lang.t("dlg.incident.add") : Lang.t("dlg.incident.edit"));
 
         DatePicker date = new DatePicker(existing == null ? LocalDate.now() : existing.occurredAt().toLocalDate());
         TextField time = new TextField(existing == null ? "12:00" : existing.occurredAt().toLocalTime().toString());
@@ -175,7 +177,7 @@ public class IncidentListController {
         mtfsWithNull.addAll(mtfs);
         ComboBox<MtfTeam> mtfCb = new ComboBox<>(mtfsWithNull);
         mtfCb.setConverter(new javafx.util.StringConverter<>() {
-            @Override public String toString(MtfTeam m) { return m == null ? "(none)" : m.callsign(); }
+            @Override public String toString(MtfTeam m) { return m == null ? Lang.t("dlg.combo.none") : m.callsign(); }
             @Override public MtfTeam fromString(String x) { return null; }
         });
         if (existing != null && existing.mtfId() != null)
@@ -191,13 +193,13 @@ public class IncidentListController {
         g.setHgap(10); g.setVgap(10);
         g.setPadding(new javafx.geometry.Insets(20));
         int r = 0;
-        g.add(new Label("Date:"),        0, r); g.add(date,     1, r++);
-        g.add(new Label("Time HH:mm:"),  0, r); g.add(time,     1, r++);
-        g.add(new Label("SCP:"),         0, r); g.add(scpCb,    1, r++);
-        g.add(new Label("Site:"),        0, r); g.add(siteCb,   1, r++);
-        g.add(new Label("MTF:"),         0, r); g.add(mtfCb,    1, r++);
-        g.add(new Label("Severity:"),    0, r); g.add(severity, 1, r++);
-        g.add(new Label("Description:"), 0, r); g.add(desc,     1, r++);
+        g.add(new Label(Lang.t("dlg.field.date")),        0, r); g.add(date,     1, r++);
+        g.add(new Label(Lang.t("dlg.field.time")),  0, r); g.add(time,     1, r++);
+        g.add(new Label(Lang.t("dlg.field.scp")),         0, r); g.add(scpCb,    1, r++);
+        g.add(new Label(Lang.t("dlg.field.site")),        0, r); g.add(siteCb,   1, r++);
+        g.add(new Label(Lang.t("dlg.field.mtf")),         0, r); g.add(mtfCb,    1, r++);
+        g.add(new Label(Lang.t("dlg.field.severity")),    0, r); g.add(severity, 1, r++);
+        g.add(new Label(Lang.t("dlg.field.description")), 0, r); g.add(desc,     1, r++);
 
         d.getDialogPane().setContent(g);
         d.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -206,9 +208,9 @@ public class IncidentListController {
             if (btn != ButtonType.OK) return null;
             LocalTime t;
             try { t = LocalTime.parse(time.getText().trim()); }
-            catch (Exception ex) { Dialogs.warn("Validation", "Время в формате HH:mm"); return null; }
+            catch (Exception ex) { Dialogs.warn(Lang.t("msg.validation"), Lang.t("msg.timeFormat")); return null; }
             if (scpCb.getValue() == null || siteCb.getValue() == null) {
-                Dialogs.warn("Validation", "SCP и Site обязательны"); return null;
+                Dialogs.warn(Lang.t("msg.validation"), Lang.t("msg.required.scpSite")); return null;
             }
             return new Incident(
                 existing == null ? null : existing.id(),

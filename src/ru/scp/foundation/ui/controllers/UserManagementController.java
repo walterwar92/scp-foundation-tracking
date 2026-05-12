@@ -16,8 +16,10 @@ import ru.scp.foundation.model.User;
 import ru.scp.foundation.model.UserRole;
 import ru.scp.foundation.ui.util.CellFactories;
 import ru.scp.foundation.ui.util.Dialogs;
+import ru.scp.foundation.util.Lang;
 
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,7 +57,7 @@ public class UserManagementController {
 
     public void init(Session session) {
         if (!session.isO5()) {
-            Dialogs.error("Access denied", "Доступ к управлению пользователями только для O5.");
+            Dialogs.error(Lang.t("msg.access.denied"), Lang.t("msg.access.denied.users"));
             return;
         }
         reload();
@@ -69,7 +71,7 @@ public class UserManagementController {
             data.setAll(dao.findAll());
             table.refresh();
         } catch (SQLException e) {
-            Dialogs.error("Ошибка БД", e.getMessage());
+            Dialogs.error(Lang.t("msg.err.db"), e.getMessage());
         }
     }
 
@@ -81,10 +83,10 @@ public class UserManagementController {
         Set<Long> withAccount = new HashSet<>();
         for (User u : data) withAccount.add(u.personnelId());
         List<Personnel> available = personnel.stream().filter(p -> !withAccount.contains(p.id())).toList();
-        if (available.isEmpty()) { Dialogs.info("Add user", "Все сотрудники уже имеют учётки."); return; }
+        if (available.isEmpty()) { Dialogs.info(Lang.t("msg.info.allUsers.title"), Lang.t("msg.info.allUsers")); return; }
 
         Dialog<User> d = new Dialog<>();
-        d.setTitle("Add user");
+        d.setTitle(Lang.t("dlg.user.add"));
         ComboBox<Personnel> personCb = new ComboBox<>(FXCollections.observableArrayList(available));
         personCb.setConverter(new javafx.util.StringConverter<>() {
             @Override public String toString(Personnel p) { return p == null ? "" : p.fullName(); }
@@ -99,17 +101,17 @@ public class UserManagementController {
         g.setHgap(10); g.setVgap(10);
         g.setPadding(new javafx.geometry.Insets(20));
         int r = 0;
-        g.add(new Label("Personnel:"), 0, r); g.add(personCb,  1, r++);
-        g.add(new Label("Login:"),     0, r); g.add(loginField,1, r++);
-        g.add(new Label("Password:"),  0, r); g.add(passField, 1, r++);
-        g.add(new Label("Role:"),      0, r); g.add(roleCb,    1, r++);
+        g.add(new Label(Lang.t("dlg.field.personnel")), 0, r); g.add(personCb,  1, r++);
+        g.add(new Label(Lang.t("dlg.field.login")),     0, r); g.add(loginField,1, r++);
+        g.add(new Label(Lang.t("dlg.field.password")),  0, r); g.add(passField, 1, r++);
+        g.add(new Label(Lang.t("dlg.field.role")),      0, r); g.add(roleCb,    1, r++);
         d.getDialogPane().setContent(g);
         d.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         d.getDialogPane().getStylesheets().add(getClass().getResource("/css/scp.css").toExternalForm());
         d.setResultConverter(btn -> {
             if (btn != ButtonType.OK) return null;
             if (personCb.getValue() == null || loginField.getText().isBlank() || passField.getText().isEmpty()) {
-                Dialogs.warn("Validation", "Заполните все поля"); return null;
+                Dialogs.warn(Lang.t("msg.validation"), Lang.t("msg.required.fillFields")); return null;
             }
             String salt = PasswordHasher.generateSalt();
             String hash = PasswordHasher.hash(salt, passField.getText());
@@ -117,16 +119,16 @@ public class UserManagementController {
         });
         d.showAndWait().ifPresent(u -> {
             try { dao.insert(u); reload(); }
-            catch (SQLException e) { Dialogs.error("Ошибка вставки", e.getMessage()); }
+            catch (SQLException e) { Dialogs.error(Lang.t("msg.err.insert"), e.getMessage()); }
         });
     }
 
     @FXML
     private void onDelete() {
         User sel = table.getSelectionModel().getSelectedItem();
-        if (sel == null) { Dialogs.warn("Delete", "Выберите пользователя"); return; }
-        if (!Dialogs.confirm("Удалить", "Удалить " + sel.login() + "?")) return;
+        if (sel == null) { Dialogs.warn(Lang.t("btn.delete"), Lang.t("msg.warn.select")); return; }
+        if (!Dialogs.confirm(Lang.t("msg.delete.title"), MessageFormat.format(Lang.t("msg.delete.user"), sel.login()))) return;
         try { dao.delete(sel.id()); reload(); }
-        catch (SQLException e) { Dialogs.error("Ошибка", e.getMessage()); }
+        catch (SQLException e) { Dialogs.error(Lang.t("msg.err.delete"), e.getMessage()); }
     }
 }

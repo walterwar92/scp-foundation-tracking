@@ -12,8 +12,10 @@ import ru.scp.foundation.auth.Session;
 import ru.scp.foundation.dao.*;
 import ru.scp.foundation.model.*;
 import ru.scp.foundation.ui.util.Dialogs;
+import ru.scp.foundation.util.Lang;
 
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -78,7 +80,7 @@ public class MtfListController {
             teams.setAll(teamDao.findAll());
             teamsTable.refresh();
         } catch (SQLException e) {
-            Dialogs.error("Ошибка БД", e.getMessage());
+            Dialogs.error(Lang.t("msg.err.db"), e.getMessage());
         }
     }
 
@@ -86,7 +88,7 @@ public class MtfListController {
         members.clear();
         if (team == null) return;
         try { members.setAll(memberDao.findByMtfId(team.id())); }
-        catch (SQLException e) { Dialogs.error("Ошибка БД", e.getMessage()); }
+        catch (SQLException e) { Dialogs.error(Lang.t("msg.err.db"), e.getMessage()); }
     }
 
     @FXML private void onRefresh() { reload(); }
@@ -95,35 +97,35 @@ public class MtfListController {
     private void onAddTeam() {
         openTeamDialog(null).ifPresent(t -> {
             try { teamDao.insert(t); reload(); }
-            catch (SQLException e) { Dialogs.error("Ошибка вставки", e.getMessage()); }
+            catch (SQLException e) { Dialogs.error(Lang.t("msg.err.insert"), e.getMessage()); }
         });
     }
 
     @FXML
     private void onEditTeam() {
         MtfTeam sel = teamsTable.getSelectionModel().getSelectedItem();
-        if (sel == null) { Dialogs.warn("Edit", "Выберите команду"); return; }
+        if (sel == null) { Dialogs.warn(Lang.t("btn.edit"), Lang.t("msg.warn.selectTeam")); return; }
         openTeamDialog(sel).ifPresent(t -> {
             try { teamDao.update(t); reload(); }
-            catch (SQLException e) { Dialogs.error("Ошибка обновления", e.getMessage()); }
+            catch (SQLException e) { Dialogs.error(Lang.t("msg.err.update"), e.getMessage()); }
         });
     }
 
     @FXML
     private void onDeleteTeam() {
         MtfTeam sel = teamsTable.getSelectionModel().getSelectedItem();
-        if (sel == null) { Dialogs.warn("Delete", "Выберите команду"); return; }
-        if (!Dialogs.confirm("Удалить", "Удалить " + sel.callsign() + "?")) return;
+        if (sel == null) { Dialogs.warn(Lang.t("btn.delete"), Lang.t("msg.warn.selectTeam")); return; }
+        if (!Dialogs.confirm(Lang.t("msg.delete.title"), MessageFormat.format(Lang.t("msg.delete.team"), sel.callsign()))) return;
         try { teamDao.delete(sel.id()); reload(); }
-        catch (SQLException e) { Dialogs.error("Ошибка удаления", e.getMessage()); }
+        catch (SQLException e) { Dialogs.error(Lang.t("msg.err.delete"), e.getMessage()); }
     }
 
     @FXML
     private void onAddMember() {
         MtfTeam team = teamsTable.getSelectionModel().getSelectedItem();
-        if (team == null) { Dialogs.warn("Add member", "Сначала выберите команду"); return; }
+        if (team == null) { Dialogs.warn(Lang.t("btn.add.member"), Lang.t("msg.warn.selectTeam")); return; }
         Dialog<MtfMember> d = new Dialog<>();
-        d.setTitle("Add member to " + team.callsign());
+        d.setTitle(Lang.t("dlg.member.add") + " " + team.callsign());
         ComboBox<Personnel> personCb = new ComboBox<>(FXCollections.observableArrayList(personnel));
         personCb.setConverter(new javafx.util.StringConverter<>() {
             @Override public String toString(Personnel p) { return p == null ? "" : p.fullName(); }
@@ -134,8 +136,8 @@ public class MtfListController {
         GridPane g = new GridPane();
         g.setHgap(10); g.setVgap(10);
         g.setPadding(new javafx.geometry.Insets(20));
-        g.add(new Label("Personnel:"), 0, 0); g.add(personCb, 1, 0);
-        g.add(new Label("Joined:"),    0, 1); g.add(joined,   1, 1);
+        g.add(new Label(Lang.t("dlg.field.personnel")), 0, 0); g.add(personCb, 1, 0);
+        g.add(new Label(Lang.t("dlg.field.joined")),    0, 1); g.add(joined,   1, 1);
         d.getDialogPane().setContent(g);
         d.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         d.getDialogPane().getStylesheets().add(getClass().getResource("/css/scp.css").toExternalForm());
@@ -145,7 +147,7 @@ public class MtfListController {
         });
         d.showAndWait().ifPresent(m -> {
             try { memberDao.insert(m); reloadMembers(team); }
-            catch (SQLException e) { Dialogs.error("Ошибка", e.getMessage()); }
+            catch (SQLException e) { Dialogs.error(Lang.t("msg.err.insert"), e.getMessage()); }
         });
     }
 
@@ -153,15 +155,15 @@ public class MtfListController {
     private void onRemoveMember() {
         MtfTeam team = teamsTable.getSelectionModel().getSelectedItem();
         MtfMember m = membersTable.getSelectionModel().getSelectedItem();
-        if (team == null || m == null) { Dialogs.warn("Remove", "Выберите участника"); return; }
-        if (!Dialogs.confirm("Удалить", "Удалить участника из группы?")) return;
+        if (team == null || m == null) { Dialogs.warn(Lang.t("btn.remove"), Lang.t("msg.warn.selectMember")); return; }
+        if (!Dialogs.confirm(Lang.t("msg.delete.title"), Lang.t("msg.delete.member"))) return;
         try { memberDao.delete(team.id(), m.personnelId()); reloadMembers(team); }
-        catch (SQLException e) { Dialogs.error("Ошибка", e.getMessage()); }
+        catch (SQLException e) { Dialogs.error(Lang.t("msg.err.delete"), e.getMessage()); }
     }
 
     private Optional<MtfTeam> openTeamDialog(MtfTeam existing) {
         Dialog<MtfTeam> d = new Dialog<>();
-        d.setTitle(existing == null ? "Add team" : "Edit " + existing.callsign());
+        d.setTitle(existing == null ? Lang.t("dlg.team.add") : Lang.t("dlg.team.edit") + " " + existing.callsign());
         TextField callsign = new TextField(existing == null ? "" : existing.callsign());
         TextField spec = new TextField(existing == null ? "" : existing.specialization());
         ComboBox<ContainmentSite> siteCb = new ComboBox<>(FXCollections.observableArrayList(sites));
@@ -177,16 +179,16 @@ public class MtfListController {
         g.setHgap(10); g.setVgap(10);
         g.setPadding(new javafx.geometry.Insets(20));
         int r = 0;
-        g.add(new Label("Callsign:"),       0, r); g.add(callsign, 1, r++);
-        g.add(new Label("Specialization:"), 0, r); g.add(spec,     1, r++);
-        g.add(new Label("Base site:"),      0, r); g.add(siteCb,   1, r++);
+        g.add(new Label(Lang.t("dlg.field.callsign")),       0, r); g.add(callsign, 1, r++);
+        g.add(new Label(Lang.t("dlg.field.spec")), 0, r); g.add(spec,     1, r++);
+        g.add(new Label(Lang.t("dlg.field.baseSite")),      0, r); g.add(siteCb,   1, r++);
         d.getDialogPane().setContent(g);
         d.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         d.getDialogPane().getStylesheets().add(getClass().getResource("/css/scp.css").toExternalForm());
         d.setResultConverter(btn -> {
             if (btn != ButtonType.OK) return null;
             if (callsign.getText().isBlank() || siteCb.getValue() == null) {
-                Dialogs.warn("Validation", "Callsign и Base site обязательны"); return null;
+                Dialogs.warn(Lang.t("msg.validation"), Lang.t("msg.required.callsign")); return null;
             }
             return new MtfTeam(
                 existing == null ? null : existing.id(),

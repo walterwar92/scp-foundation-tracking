@@ -21,39 +21,45 @@
     </VBox>
 
     <!-- Слой 3: правый-нижний инфо-лейбл -->
-    <Label text="LINK 0x7A . AES-256-GCM . O5-CMD/2026"
+    <Label text="%login.link"
            styleClass="warning-strip"
            StackPane.alignment="BOTTOM_RIGHT">
         <StackPane.margin><Insets right="18" bottom="14"/></StackPane.margin>
     </Label>
 
+    <!-- Слой 3b: переключатель языка в правом верхнем углу -->
+    <Button fx:id="langButton" text="EN / RU" onAction="#onToggleLang"
+            StackPane.alignment="TOP_RIGHT">
+        <StackPane.margin><Insets top="14" right="18"/></StackPane.margin>
+    </Button>
+
     <!-- Слой 4: центральная карточка логина -->
     <VBox alignment="CENTER" spacing="10" maxWidth="500" maxHeight="540" styleClass="login-card">
         <padding><Insets top="22" right="36" bottom="24" left="36"/></padding>
 
-        <!-- Верхняя мета-строка: DOC // SCP-OS v4.7.2  |  ENCRYPTED -->
+        <!-- Верхняя мета-строка -->
         <HBox alignment="CENTER" spacing="0">
-            <Label text="DOC // SCP-OS v4.7.2" styleClass="doc-meta" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
-            <Label text="// ENCRYPTED" styleClass="doc-encrypted"/>
+            <Label text="%login.doc" styleClass="doc-meta" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            <Label text="%login.encrypted" styleClass="doc-encrypted"/>
         </HBox>
 
         <!-- Логотип -->
         <Canvas fx:id="logoCanvas" width="108" height="108"/>
 
-        <Label text="SECURE TERMINAL" styleClass="header"/>
-        <Label text="ACCESS REQUIRED" styleClass="subheader"/>
+        <Label text="%login.title" styleClass="header"/>
+        <Label text="%login.subtitle" styleClass="subheader"/>
 
         <Region prefHeight="6"/>
 
         <!-- Поле LOGIN -->
         <VBox spacing="6">
-            <Label text="LOGIN" styleClass="field-label"/>
+            <Label text="%login.login" styleClass="field-label"/>
             <TextField fx:id="loginField" promptText="a.clef"/>
         </VBox>
 
         <!-- Поле PASSWORD -->
         <VBox spacing="6">
-            <Label text="PASSWORD" styleClass="field-label"/>
+            <Label text="%login.password" styleClass="field-label"/>
             <PasswordField fx:id="passwordField" promptText="**********"/>
         </VBox>
 
@@ -63,7 +69,7 @@
         <Region prefHeight="6"/>
 
         <!-- Кнопка AUTHENTICATE -->
-        <Button fx:id="loginButton" text="AUTHENTICATE" onAction="#onLogin"
+        <Button fx:id="loginButton" text="%login.button" onAction="#onLogin"
                 styleClass="primary,lg" prefWidth="260">
             <VBox.margin><Insets left="50" right="50"/></VBox.margin>
         </Button>
@@ -73,9 +79,9 @@
         <Region styleClass="login-card-divider"/>
         <HBox alignment="CENTER" spacing="0">
             <padding><Insets top="6"/></padding>
-            <Label text="UNAUTHORIZED ACCESS PROHIBITED"
+            <Label text="%login.unauth"
                    styleClass="warning-strip" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
-            <Label text="O5-CMD" styleClass="o5-stamp"/>
+            <Label text="%login.o5" styleClass="o5-stamp"/>
         </HBox>
 
     </VBox>

@@ -14,8 +14,10 @@ import ru.scp.foundation.auth.Session;
 import ru.scp.foundation.dao.ContainmentSiteDao;
 import ru.scp.foundation.model.ContainmentSite;
 import ru.scp.foundation.ui.util.Dialogs;
+import ru.scp.foundation.util.Lang;
 
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.Optional;
 
 public class SiteListController {
@@ -69,7 +71,7 @@ public class SiteListController {
 
     private void reload() {
         try { all.setAll(dao.findAll()); }
-        catch (SQLException e) { Dialogs.error("Ошибка БД", e.getMessage()); }
+        catch (SQLException e) { Dialogs.error(Lang.t("msg.err.db"), e.getMessage()); }
     }
 
     @FXML private void onRefresh() { reload(); }
@@ -78,36 +80,36 @@ public class SiteListController {
     private void onAdd() {
         openDialog(null).ifPresent(s -> {
             try { dao.insert(s); reload(); }
-            catch (SQLException e) { Dialogs.error("Ошибка вставки", e.getMessage()); }
+            catch (SQLException e) { Dialogs.error(Lang.t("msg.err.insert"), e.getMessage()); }
         });
     }
 
     @FXML
     private void onEdit() {
         ContainmentSite sel = table.getSelectionModel().getSelectedItem();
-        if (sel == null) { Dialogs.warn("Edit", "Выберите запись"); return; }
+        if (sel == null) { Dialogs.warn(Lang.t("btn.edit"), Lang.t("msg.warn.select")); return; }
         edit(sel);
     }
 
     private void edit(ContainmentSite sel) {
         openDialog(sel).ifPresent(s -> {
             try { dao.update(s); reload(); }
-            catch (SQLException e) { Dialogs.error("Ошибка обновления", e.getMessage()); }
+            catch (SQLException e) { Dialogs.error(Lang.t("msg.err.update"), e.getMessage()); }
         });
     }
 
     @FXML
     private void onDelete() {
         ContainmentSite sel = table.getSelectionModel().getSelectedItem();
-        if (sel == null) { Dialogs.warn("Delete", "Выберите запись"); return; }
-        if (!Dialogs.confirm("Удалить", "Удалить " + sel.siteCode() + "?")) return;
+        if (sel == null) { Dialogs.warn(Lang.t("btn.delete"), Lang.t("msg.warn.select")); return; }
+        if (!Dialogs.confirm(Lang.t("msg.delete.title"), MessageFormat.format(Lang.t("msg.delete.site"), sel.siteCode()))) return;
         try { dao.delete(sel.id()); reload(); }
-        catch (SQLException e) { Dialogs.error("Ошибка удаления", "Нельзя — есть зависимые записи.\n" + e.getMessage()); }
+        catch (SQLException e) { Dialogs.error(Lang.t("msg.err.delete"), Lang.t("msg.err.deleteFk") + "\n" + e.getMessage()); }
     }
 
     private Optional<ContainmentSite> openDialog(ContainmentSite existing) {
         Dialog<ContainmentSite> d = new Dialog<>();
-        d.setTitle(existing == null ? "Add Site" : "Edit " + existing.siteCode());
+        d.setTitle(existing == null ? Lang.t("dlg.site.add") : Lang.t("dlg.site.edit") + " " + existing.siteCode());
         TextField code = new TextField(existing == null ? "" : existing.siteCode());
         TextField loc = new TextField(existing == null ? "" : existing.location());
         TextField cap = new TextField(existing == null || existing.capacity() == null ? "" : existing.capacity().toString());
@@ -118,20 +120,20 @@ public class SiteListController {
         g.setHgap(10); g.setVgap(10);
         g.setPadding(new javafx.geometry.Insets(20));
         int r = 0;
-        g.add(new Label("Code:"),           0, r); g.add(code, 1, r++);
-        g.add(new Label("Location:"),       0, r); g.add(loc,  1, r++);
-        g.add(new Label("Capacity:"),       0, r); g.add(cap,  1, r++);
-        g.add(new Label("Security level:"), 0, r); g.add(sec,  1, r++);
+        g.add(new Label(Lang.t("dlg.field.code")),           0, r); g.add(code, 1, r++);
+        g.add(new Label(Lang.t("dlg.field.location")),       0, r); g.add(loc,  1, r++);
+        g.add(new Label(Lang.t("dlg.field.capacity")),       0, r); g.add(cap,  1, r++);
+        g.add(new Label(Lang.t("dlg.field.security")), 0, r); g.add(sec,  1, r++);
         d.getDialogPane().setContent(g);
         d.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         d.getDialogPane().getStylesheets().add(getClass().getResource("/css/scp.css").toExternalForm());
         d.setResultConverter(btn -> {
             if (btn != ButtonType.OK) return null;
-            if (code.getText().isBlank()) { Dialogs.warn("Validation", "Code обязателен"); return null; }
+            if (code.getText().isBlank()) { Dialogs.warn(Lang.t("msg.validation"), Lang.t("msg.required.code")); return null; }
             Integer capInt = null;
             if (!cap.getText().isBlank()) {
                 try { capInt = Integer.parseInt(cap.getText().trim()); }
-                catch (NumberFormatException ex) { Dialogs.warn("Validation", "Capacity должна быть числом"); return null; }
+                catch (NumberFormatException ex) { Dialogs.warn(Lang.t("msg.validation"), Lang.t("msg.capacityNumber")); return null; }
             }
             return new ContainmentSite(
                 existing == null ? null : existing.id(),

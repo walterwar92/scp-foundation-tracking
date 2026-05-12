@@ -19,6 +19,7 @@ import ru.scp.foundation.auth.AuthService;
 import ru.scp.foundation.auth.Session;
 import ru.scp.foundation.ui.animation.BackgroundAnimator;
 import ru.scp.foundation.ui.animation.LogoAnimator;
+import ru.scp.foundation.util.Lang;
 
 import java.util.LinkedList;
 import java.util.Optional;
@@ -138,23 +139,45 @@ public class LoginController {
         String login = loginField.getText().trim();
         String password = passwordField.getText();
         if (login.isEmpty() || password.isEmpty()) {
-            errorLabel.setText("ENTER LOGIN AND PASSWORD");
+            errorLabel.setText(Lang.t("login.error.fields"));
             return;
         }
         loginButton.setDisable(true);
         Optional<Session> result = authService.login(login, password);
         loginButton.setDisable(false);
         if (result.isEmpty()) {
-            errorLabel.setText("ACCESS DENIED // INVALID CREDENTIALS");
+            errorLabel.setText(Lang.t("login.error.denied"));
             passwordField.clear();
             return;
         }
         openMain(result.get());
     }
 
+    @FXML
+    private void onToggleLang() {
+        // Останавливаем анимации/тред и перезагружаем сцену логина с другим бандлом.
+        Lang.toggle();
+        if (bootThread != null) bootThread.interrupt();
+        bg.stop();
+        logo.stop();
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/LoginView.fxml"));
+            loader.setResources(Lang.bundle());
+            Parent root = loader.load();
+            Stage stage = (Stage) loginButton.getScene().getWindow();
+            Scene scene = new Scene(root, 900, 600);
+            scene.getStylesheets().add(getClass().getResource("/css/scp.css").toExternalForm());
+            stage.setTitle(Lang.t("app.title"));
+            stage.setScene(scene);
+        } catch (Exception ex) {
+            errorLabel.setText(ex.getMessage());
+        }
+    }
+
     private void openMain(Session session) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainView.fxml"));
+            loader.setResources(Lang.bundle());
             Parent root = loader.load();
             MainController main = loader.getController();
             main.setSession(session);
@@ -166,7 +189,9 @@ public class LoginController {
             bg.stop();
             logo.stop();
             stage.setScene(scene);
-            stage.setTitle("SCP Foundation — " + session.displayName());
+            // Главное окно — растягиваемое
+            stage.setResizable(true);
+            stage.setTitle(Lang.t("app.title") + " — " + session.displayName());
         } catch (Exception e) {
             errorLabel.setText("FAILED TO OPEN MAIN: " + e.getMessage());
         }

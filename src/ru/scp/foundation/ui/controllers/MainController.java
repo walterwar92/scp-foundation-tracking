@@ -17,6 +17,7 @@ import ru.scp.foundation.db.ConnectionManager;
 import ru.scp.foundation.ui.animation.BackgroundAnimator;
 import ru.scp.foundation.ui.animation.LogoAnimator;
 import ru.scp.foundation.ui.util.Dialogs;
+import ru.scp.foundation.util.Lang;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -80,21 +81,46 @@ public class MainController {
 
     public void setSession(Session session) {
         this.session = session;
-        statusUser.setText("USER: " + session.login().toUpperCase() + " // " +
-                           session.displayName().toUpperCase() + " // " +
-                           session.role() + " // CLEARANCE L" + session.clearanceLevel());
-        statusDb.setText("DB: " + ConnectionManager.dialectName());
+        statusUser.setText(java.text.MessageFormat.format(Lang.t("status.user"),
+            session.login().toUpperCase(), session.displayName().toUpperCase(),
+            session.role(), session.clearanceLevel()));
+        statusDb.setText(java.text.MessageFormat.format(Lang.t("status.db"), ConnectionManager.dialectName()));
 
         boolean canManage = AccessControl.canManageUsers(session);
         usersButton.setVisible(canManage);
         usersButton.setManaged(canManage);
 
-        welcomeLabel.setText("WELCOME, " + session.displayName().toUpperCase());
-        welcomeSubLabel.setText("CLEARANCE LEVEL " + session.clearanceLevel() + " // " +
-                                 session.role() + " ACCESS");
+        welcomeLabel.setText(Lang.t("main.welcome") + ", " + session.displayName().toUpperCase());
+        welcomeSubLabel.setText(java.text.MessageFormat.format(Lang.t("main.clearance"),
+            session.clearanceLevel()) + " // " + session.role());
 
-        // Session ID — стабильно генерируется из userId (без рандома)
-        sessionLabel.setText(String.format("SESSION 0x%04X", (int)(session.userId() * 1103515245L & 0xFFFF)));
+        sessionLabel.setText(Lang.t("main.session") + " " +
+            String.format("0x%04X", (int)(session.userId() * 1103515245L & 0xFFFF)));
+    }
+
+    @FXML
+    private void onToggleLang() {
+        Lang.toggle();
+        // Перезагружаем MainView с новым бандлом — возвращаемся в welcome-состояние.
+        bg.stop();
+        miniLogo.stop();
+        welcomeLogo.stop();
+        if (clockTimer != null) clockTimer.stop();
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainView.fxml"));
+            loader.setResources(Lang.bundle());
+            Parent root = loader.load();
+            MainController next = loader.getController();
+            next.setSession(session);
+
+            Stage stage = (Stage) contentArea.getScene().getWindow();
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, stage.getScene().getWidth(), stage.getScene().getHeight());
+            scene.getStylesheets().add(getClass().getResource("/css/scp.css").toExternalForm());
+            stage.setScene(scene);
+            stage.setTitle(Lang.t("app.title") + " — " + session.displayName());
+        } catch (Exception e) {
+            Dialogs.error(Lang.t("msg.err.openScreen"), e.getMessage());
+        }
     }
 
     private void setActiveNav(Button activeBtn) {
@@ -109,33 +135,33 @@ public class MainController {
         }
     }
 
-    private void loadView(String fxml, String crumb, Button navBtn, java.util.function.Consumer<Object> configurer) {
+    private void loadView(String fxml, String crumbKey, Button navBtn, java.util.function.Consumer<Object> configurer) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxml));
+            loader.setResources(Lang.bundle());
             Parent view = loader.load();
             if (configurer != null) configurer.accept(loader.getController());
-            // Удаляем все слои поверх фонового canvas
             contentArea.getChildren().removeIf(n -> n != bgCanvas);
             contentArea.getChildren().add(view);
-            crumbLabel.setText(crumb);
+            crumbLabel.setText(Lang.t(crumbKey));
             setActiveNav(navBtn);
         } catch (Exception e) {
-            Dialogs.error("Error", "Failed to open screen: " + e.getMessage());
+            Dialogs.error(Lang.t("msg.err.openScreen"), e.getMessage());
         }
     }
 
-    @FXML private void showScpObjects()  { loadView("/fxml/ScpListView.fxml",            "SCP OBJECTS",         navScp,        c -> ((ScpListController)c).init(session)); }
-    @FXML private void showSites()       { loadView("/fxml/SiteListView.fxml",           "CONTAINMENT SITES",   navSites,      c -> ((SiteListController)c).init(session)); }
-    @FXML private void showPersonnel()   { loadView("/fxml/PersonnelListView.fxml",      "PERSONNEL",           navPersonnel,  c -> ((PersonnelListController)c).init(session)); }
-    @FXML private void showMtfTeams()    { loadView("/fxml/MtfListView.fxml",            "MTF TEAMS",           navMtf,        c -> ((MtfListController)c).init(session)); }
-    @FXML private void showIncidents()   { loadView("/fxml/IncidentListView.fxml",       "INCIDENTS",           navIncidents,  c -> ((IncidentListController)c).init(session)); }
-    @FXML private void showHistory()     { loadView("/fxml/ContainmentHistoryView.fxml", "CONTAINMENT HISTORY", navHistory,    c -> ((ContainmentHistoryController)c).init(session)); }
-    @FXML private void showProcedures()  { loadView("/fxml/ProcedureRevisionsView.fxml", "PROCEDURE REVISIONS", navProcedures, c -> ((ProcedureRevisionsController)c).init(session)); }
-    @FXML private void showUsers()       { loadView("/fxml/UserManagementView.fxml",     "USER MANAGEMENT",     usersButton,   c -> ((UserManagementController)c).init(session)); }
+    @FXML private void showScpObjects()  { loadView("/fxml/ScpListView.fxml",            "title.scp",        navScp,        c -> ((ScpListController)c).init(session)); }
+    @FXML private void showSites()       { loadView("/fxml/SiteListView.fxml",           "title.sites",      navSites,      c -> ((SiteListController)c).init(session)); }
+    @FXML private void showPersonnel()   { loadView("/fxml/PersonnelListView.fxml",      "title.personnel",  navPersonnel,  c -> ((PersonnelListController)c).init(session)); }
+    @FXML private void showMtfTeams()    { loadView("/fxml/MtfListView.fxml",            "title.mtf",        navMtf,        c -> ((MtfListController)c).init(session)); }
+    @FXML private void showIncidents()   { loadView("/fxml/IncidentListView.fxml",       "title.incidents",  navIncidents,  c -> ((IncidentListController)c).init(session)); }
+    @FXML private void showHistory()     { loadView("/fxml/ContainmentHistoryView.fxml", "title.history",    navHistory,    c -> ((ContainmentHistoryController)c).init(session)); }
+    @FXML private void showProcedures()  { loadView("/fxml/ProcedureRevisionsView.fxml", "title.procedures", navProcedures, c -> ((ProcedureRevisionsController)c).init(session)); }
+    @FXML private void showUsers()       { loadView("/fxml/UserManagementView.fxml",     "title.users",      usersButton,   c -> ((UserManagementController)c).init(session)); }
 
     @FXML
     private void onLogout() {
-        if (!Dialogs.confirm("Logout", "End session?")) return;
+        if (!Dialogs.confirm(Lang.t("main.confirm.logout.title"), Lang.t("main.confirm.logout.msg"))) return;
         bg.stop();
         miniLogo.stop();
         welcomeLogo.stop();
@@ -143,13 +169,16 @@ public class MainController {
         try {
             Stage stage = (Stage) contentArea.getScene().getWindow();
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/LoginView.fxml"));
+            loader.setResources(Lang.bundle());
             Parent root = loader.load();
             javafx.scene.Scene scene = new javafx.scene.Scene(root, 900, 600);
             scene.getStylesheets().add(getClass().getResource("/css/scp.css").toExternalForm());
             stage.setScene(scene);
-            stage.setTitle("SCP Foundation — Secure Terminal");
+            stage.setTitle(Lang.t("app.title"));
+            // На логине окно снова фиксированного размера.
+            stage.setResizable(false);
         } catch (Exception e) {
-            Dialogs.error("Error", e.getMessage());
+            Dialogs.error(Lang.t("msg.err.openScreen"), e.getMessage());
             Platform.exit();
         }
     }

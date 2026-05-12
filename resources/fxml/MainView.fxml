@@ -15,31 +15,31 @@
             <HBox styleClass="sidebar-header" spacing="10" alignment="CENTER_LEFT">
                 <Canvas fx:id="miniLogoCanvas" width="28" height="28"/>
                 <VBox spacing="4">
-                    <Label text="SCP FOUNDATION" styleClass="header" style="-fx-font-size: 13;"/>
-                    <Label text="SECURE TERMINAL" styleClass="subheader" style="-fx-font-size: 9.5;"/>
+                    <Label text="%main.foundation" styleClass="header" style="-fx-font-size: 13;"/>
+                    <Label text="%main.terminal" styleClass="subheader" style="-fx-font-size: 9.5;"/>
                 </VBox>
             </HBox>
 
             <!-- Меню разделов -->
             <VBox styleClass="sidebar-nav">
-                <Button fx:id="navScp"        text="▸ SCP OBJECTS"          onAction="#showScpObjects" styleClass="nav-btn"/>
-                <Button fx:id="navSites"      text="▸ CONTAINMENT SITES"    onAction="#showSites"      styleClass="nav-btn"/>
-                <Button fx:id="navPersonnel"  text="▸ PERSONNEL"            onAction="#showPersonnel"  styleClass="nav-btn"/>
-                <Button fx:id="navMtf"        text="▸ MTF TEAMS"            onAction="#showMtfTeams"   styleClass="nav-btn"/>
-                <Button fx:id="navIncidents"  text="▸ INCIDENTS"            onAction="#showIncidents"  styleClass="nav-btn"/>
-                <Button fx:id="navHistory"    text="▸ CONT. HISTORY"        onAction="#showHistory"    styleClass="nav-btn"/>
-                <Button fx:id="navProcedures" text="▸ PROC. REVISIONS"      onAction="#showProcedures" styleClass="nav-btn"/>
+                <Button fx:id="navScp"        text="▸ %nav.scp"         onAction="#showScpObjects" styleClass="nav-btn"/>
+                <Button fx:id="navSites"      text="▸ %nav.sites"       onAction="#showSites"      styleClass="nav-btn"/>
+                <Button fx:id="navPersonnel"  text="▸ %nav.personnel"   onAction="#showPersonnel"  styleClass="nav-btn"/>
+                <Button fx:id="navMtf"        text="▸ %nav.mtf"         onAction="#showMtfTeams"   styleClass="nav-btn"/>
+                <Button fx:id="navIncidents"  text="▸ %nav.incidents"   onAction="#showIncidents"  styleClass="nav-btn"/>
+                <Button fx:id="navHistory"    text="▸ %nav.history"     onAction="#showHistory"    styleClass="nav-btn"/>
+                <Button fx:id="navProcedures" text="▸ %nav.procedures"  onAction="#showProcedures" styleClass="nav-btn"/>
                 <Region prefHeight="6"/>
                 <Region styleClass="sidebar-section-divider"/>
                 <Region prefHeight="6"/>
-                <Button fx:id="usersButton"   text="▸ USERS"                onAction="#showUsers"      styleClass="nav-btn"/>
+                <Button fx:id="usersButton"   text="▸ %nav.users"       onAction="#showUsers"      styleClass="nav-btn"/>
             </VBox>
 
             <Region VBox.vgrow="ALWAYS"/>
 
             <!-- Footer: LOGOUT -->
             <VBox styleClass="sidebar-footer">
-                <Button text="⏻ LOGOUT" onAction="#onLogout" styleClass="nav-btn,danger"/>
+                <Button text="⏻ %main.logout" onAction="#onLogout" styleClass="nav-btn,danger"/>
             </VBox>
         </VBox>
     </left>
@@ -48,8 +48,9 @@
         <VBox>
             <!-- Breadcrumb-бар -->
             <HBox styleClass="breadcrumb-bar">
-                <Label fx:id="crumbLabel" text="HOME" styleClass="crumb-current"/>
+                <Label fx:id="crumbLabel" text="%main.home" styleClass="crumb-current"/>
                 <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="langButton" text="EN / RU" onAction="#onToggleLang"/>
                 <Label fx:id="sessionLabel" text="SESSION 0x4F2A"/>
                 <Label text="•" styleClass="session-dot"/>
             </HBox>
@@ -61,8 +62,8 @@
                 <!-- Welcome-блок (показывается до выбора раздела) -->
                 <VBox fx:id="welcomeBox" alignment="CENTER" spacing="20" maxWidth="700">
                     <Canvas fx:id="welcomeLogoCanvas" width="120" height="120"/>
-                    <Label text="ACCESS GRANTED" styleClass="welcome-banner"/>
-                    <Label fx:id="welcomeLabel" text="WELCOME" styleClass="welcome-headline"/>
+                    <Label text="%main.access" styleClass="welcome-banner"/>
+                    <Label fx:id="welcomeLabel" text="%main.welcome" styleClass="welcome-headline"/>
                     <Label fx:id="welcomeSubLabel" text="" styleClass="welcome-sub"/>
                 </VBox>
             </StackPane>
@@ -74,7 +75,7 @@
             <Region styleClass="status-dot"/>
             <Label fx:id="statusUser"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Label text="ONLINE" styleClass="status-online"/>
+            <Label text="%status.online" styleClass="status-online"/>
             <Label text="|" styleClass="status-separator"/>
             <Label fx:id="statusDb"/>
             <Label text="|" styleClass="status-separator"/>

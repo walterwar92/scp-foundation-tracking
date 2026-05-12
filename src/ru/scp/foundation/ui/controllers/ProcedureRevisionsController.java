@@ -14,8 +14,10 @@ import ru.scp.foundation.dao.*;
 import ru.scp.foundation.model.*;
 import ru.scp.foundation.ui.util.CellFactories;
 import ru.scp.foundation.ui.util.Dialogs;
+import ru.scp.foundation.util.Lang;
 
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -77,7 +79,7 @@ public class ProcedureRevisionsController {
             for (var p : personnel) personnelNameById.put(p.id(), p.fullName());
             scps.setAll(scpDao.findVisible(session.isO5() ? 5 : session.clearanceLevel()));
         } catch (SQLException e) {
-            Dialogs.error("Ошибка БД", e.getMessage());
+            Dialogs.error(Lang.t("msg.err.db"), e.getMessage());
         }
     }
 
@@ -86,21 +88,21 @@ public class ProcedureRevisionsController {
         textArea.clear();
         if (sel == null) return;
         try { revisions.setAll(dao.findByScpId(sel.id())); }
-        catch (SQLException e) { Dialogs.error("Ошибка БД", e.getMessage()); }
+        catch (SQLException e) { Dialogs.error(Lang.t("msg.err.db"), e.getMessage()); }
     }
 
     @FXML
     private void onAdd() {
         ScpObject scp = scpList.getSelectionModel().getSelectedItem();
-        if (scp == null) { Dialogs.warn("Add", "Выберите SCP слева"); return; }
+        if (scp == null) { Dialogs.warn(Lang.t("btn.add"), Lang.t("msg.warn.selectScp")); return; }
         try {
             int next = dao.nextRevisionNumber(scp.id());
             openDialog(null, scp, next).ifPresent(r -> {
                 try { dao.insert(r); reloadRevisions(scp); }
-                catch (SQLException e) { Dialogs.error("Ошибка вставки", e.getMessage()); }
+                catch (SQLException e) { Dialogs.error(Lang.t("msg.err.insert"), e.getMessage()); }
             });
         } catch (SQLException e) {
-            Dialogs.error("Ошибка БД", e.getMessage());
+            Dialogs.error(Lang.t("msg.err.db"), e.getMessage());
         }
     }
 
@@ -108,10 +110,10 @@ public class ProcedureRevisionsController {
     private void onEdit() {
         ScpObject scp = scpList.getSelectionModel().getSelectedItem();
         ProcedureRevision rev = revTable.getSelectionModel().getSelectedItem();
-        if (scp == null || rev == null) { Dialogs.warn("Edit", "Выберите ревизию"); return; }
+        if (scp == null || rev == null) { Dialogs.warn(Lang.t("btn.edit"), Lang.t("msg.warn.selectRev")); return; }
         openDialog(rev, scp, rev.revisionNumber()).ifPresent(r -> {
             try { dao.update(r); reloadRevisions(scp); }
-            catch (SQLException e) { Dialogs.error("Ошибка обновления", e.getMessage()); }
+            catch (SQLException e) { Dialogs.error(Lang.t("msg.err.update"), e.getMessage()); }
         });
     }
 
@@ -119,15 +121,15 @@ public class ProcedureRevisionsController {
     private void onDelete() {
         ScpObject scp = scpList.getSelectionModel().getSelectedItem();
         ProcedureRevision rev = revTable.getSelectionModel().getSelectedItem();
-        if (rev == null) { Dialogs.warn("Delete", "Выберите ревизию"); return; }
-        if (!Dialogs.confirm("Удалить", "Удалить ревизию #" + rev.revisionNumber() + "?")) return;
+        if (rev == null) { Dialogs.warn(Lang.t("btn.delete"), Lang.t("msg.warn.selectRev")); return; }
+        if (!Dialogs.confirm(Lang.t("msg.delete.title"), MessageFormat.format(Lang.t("msg.delete.revision"), rev.revisionNumber()))) return;
         try { dao.delete(rev.id()); reloadRevisions(scp); }
-        catch (SQLException e) { Dialogs.error("Ошибка", e.getMessage()); }
+        catch (SQLException e) { Dialogs.error(Lang.t("msg.err.delete"), e.getMessage()); }
     }
 
     private Optional<ProcedureRevision> openDialog(ProcedureRevision existing, ScpObject scp, int revNum) {
         Dialog<ProcedureRevision> d = new Dialog<>();
-        d.setTitle(existing == null ? "New revision #" + revNum + " for " + scp.itemNumber() : "Edit revision");
+        d.setTitle(existing == null ? Lang.t("dlg.proc.new") + revNum + " for " + scp.itemNumber() : Lang.t("dlg.proc.edit"));
 
         Label scpInfo = new Label(scp.itemNumber() + " — " + scp.codeName());
         Label revInfo = new Label("#" + revNum);
@@ -147,18 +149,18 @@ public class ProcedureRevisionsController {
         g.setHgap(10); g.setVgap(10);
         g.setPadding(new javafx.geometry.Insets(20));
         int r = 0;
-        g.add(new Label("SCP:"),       0, r); g.add(scpInfo,    1, r++);
-        g.add(new Label("Revision #:"),0, r); g.add(revInfo,    1, r++);
-        g.add(new Label("Date:"),      0, r); g.add(date,       1, r++);
-        g.add(new Label("Approved:"),  0, r); g.add(approvedCb, 1, r++);
-        g.add(new Label("Text:"),      0, r); g.add(text,       1, r++);
+        g.add(new Label(Lang.t("dlg.field.scp")),       0, r); g.add(scpInfo,    1, r++);
+        g.add(new Label(Lang.t("dlg.field.revNum")),0, r); g.add(revInfo,    1, r++);
+        g.add(new Label(Lang.t("dlg.field.date")),      0, r); g.add(date,       1, r++);
+        g.add(new Label(Lang.t("dlg.field.approved")),  0, r); g.add(approvedCb, 1, r++);
+        g.add(new Label(Lang.t("dlg.field.text")),      0, r); g.add(text,       1, r++);
         d.getDialogPane().setContent(g);
         d.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         d.getDialogPane().getStylesheets().add(getClass().getResource("/css/scp.css").toExternalForm());
         d.setResultConverter(btn -> {
             if (btn != ButtonType.OK) return null;
             if (text.getText().isBlank() || approvedCb.getValue() == null) {
-                Dialogs.warn("Validation", "Text и Approved обязательны"); return null;
+                Dialogs.warn(Lang.t("msg.validation"), Lang.t("msg.required.textApproved")); return null;
             }
             return new ProcedureRevision(
                 existing == null ? null : existing.id(),

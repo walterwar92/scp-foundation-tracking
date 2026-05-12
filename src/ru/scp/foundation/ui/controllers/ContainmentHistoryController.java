@@ -13,6 +13,7 @@ import ru.scp.foundation.dao.*;
 import ru.scp.foundation.model.*;
 import ru.scp.foundation.ui.util.CellFactories;
 import ru.scp.foundation.ui.util.Dialogs;
+import ru.scp.foundation.util.Lang;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -53,7 +54,7 @@ public class ContainmentHistoryController {
         table.setItems(data);
 
         scpFilter.setConverter(new javafx.util.StringConverter<>() {
-            @Override public String toString(ScpObject s) { return s == null ? "(all)" : s.itemNumber(); }
+            @Override public String toString(ScpObject s) { return s == null ? Lang.t("dlg.combo.all") : s.itemNumber(); }
             @Override public ScpObject fromString(String x) { return null; }
         });
         scpFilter.getSelectionModel().selectedItemProperty().addListener((o, oV, nV) -> reload());
@@ -79,7 +80,7 @@ public class ContainmentHistoryController {
             scpFilter.setItems(withNull);
             scpFilter.setValue(null);
         } catch (SQLException e) {
-            Dialogs.error("Ошибка БД", e.getMessage());
+            Dialogs.error(Lang.t("msg.err.db"), e.getMessage());
         }
         reload();
     }
@@ -95,7 +96,7 @@ public class ContainmentHistoryController {
             data.setAll(rows);
             table.refresh();
         } catch (SQLException e) {
-            Dialogs.error("Ошибка БД", e.getMessage());
+            Dialogs.error(Lang.t("msg.err.db"), e.getMessage());
         }
     }
 
@@ -105,32 +106,32 @@ public class ContainmentHistoryController {
     private void onAdd() {
         openDialog(null).ifPresent(h -> {
             try { dao.insert(h); reload(); }
-            catch (SQLException e) { Dialogs.error("Ошибка", e.getMessage()); }
+            catch (SQLException e) { Dialogs.error(Lang.t("msg.err.insert"), e.getMessage()); }
         });
     }
 
     @FXML
     private void onEdit() {
         ContainmentHistory sel = table.getSelectionModel().getSelectedItem();
-        if (sel == null) { Dialogs.warn("Edit", "Выберите запись"); return; }
+        if (sel == null) { Dialogs.warn(Lang.t("btn.edit"), Lang.t("msg.warn.select")); return; }
         openDialog(sel).ifPresent(h -> {
             try { dao.update(h); reload(); }
-            catch (SQLException e) { Dialogs.error("Ошибка", e.getMessage()); }
+            catch (SQLException e) { Dialogs.error(Lang.t("msg.err.update"), e.getMessage()); }
         });
     }
 
     @FXML
     private void onDelete() {
         ContainmentHistory sel = table.getSelectionModel().getSelectedItem();
-        if (sel == null) { Dialogs.warn("Delete", "Выберите запись"); return; }
-        if (!Dialogs.confirm("Удалить", "Удалить запись истории?")) return;
+        if (sel == null) { Dialogs.warn(Lang.t("btn.delete"), Lang.t("msg.warn.select")); return; }
+        if (!Dialogs.confirm(Lang.t("msg.delete.title"), Lang.t("msg.delete.history"))) return;
         try { dao.delete(sel.id()); reload(); }
-        catch (SQLException e) { Dialogs.error("Ошибка", e.getMessage()); }
+        catch (SQLException e) { Dialogs.error(Lang.t("msg.err.delete"), e.getMessage()); }
     }
 
     private Optional<ContainmentHistory> openDialog(ContainmentHistory existing) {
         Dialog<ContainmentHistory> d = new Dialog<>();
-        d.setTitle(existing == null ? "Add history entry" : "Edit history");
+        d.setTitle(existing == null ? Lang.t("dlg.history.add") : Lang.t("dlg.history.edit"));
 
         ComboBox<ScpObject> scpCb = new ComboBox<>(FXCollections.observableArrayList(scps));
         scpCb.setConverter(new javafx.util.StringConverter<>() {
@@ -155,20 +156,20 @@ public class ContainmentHistoryController {
         g.setHgap(10); g.setVgap(10);
         g.setPadding(new javafx.geometry.Insets(20));
         int r = 0;
-        g.add(new Label("SCP:"),        0, r); g.add(scpCb,   1, r++);
-        g.add(new Label("Site:"),       0, r); g.add(siteCb,  1, r++);
-        g.add(new Label("Moved in:"),   0, r); g.add(inDate,  1, r++);
-        g.add(new Label("Moved out:"),  0, r); g.add(outDate, 1, r++);
+        g.add(new Label(Lang.t("dlg.field.scp")),        0, r); g.add(scpCb,   1, r++);
+        g.add(new Label(Lang.t("dlg.field.site")),       0, r); g.add(siteCb,  1, r++);
+        g.add(new Label(Lang.t("dlg.field.movedIn")),   0, r); g.add(inDate,  1, r++);
+        g.add(new Label(Lang.t("dlg.field.movedOut")),  0, r); g.add(outDate, 1, r++);
         d.getDialogPane().setContent(g);
         d.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         d.getDialogPane().getStylesheets().add(getClass().getResource("/css/scp.css").toExternalForm());
         d.setResultConverter(btn -> {
             if (btn != ButtonType.OK) return null;
             if (scpCb.getValue() == null || siteCb.getValue() == null || inDate.getValue() == null) {
-                Dialogs.warn("Validation", "SCP, Site и Moved in обязательны"); return null;
+                Dialogs.warn(Lang.t("msg.validation"), Lang.t("msg.required.scpSiteIn")); return null;
             }
             if (outDate.getValue() != null && !outDate.getValue().isAfter(inDate.getValue())) {
-                Dialogs.warn("Validation", "Moved out должна быть позже Moved in"); return null;
+                Dialogs.warn(Lang.t("msg.validation"), Lang.t("msg.movedOutAfter")); return null;
             }
             return new ContainmentHistory(
                 existing == null ? null : existing.id(),

@@ -15,8 +15,10 @@ import ru.scp.foundation.model.ObjectClass;
 import ru.scp.foundation.model.ScpObject;
 import ru.scp.foundation.ui.util.CellFactories;
 import ru.scp.foundation.ui.util.Dialogs;
+import ru.scp.foundation.util.Lang;
 
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -84,7 +86,7 @@ public class ScpListController {
                 session.isO5() ? 5 : session.clearanceLevel()
             ));
         } catch (SQLException e) {
-            Dialogs.error("Ошибка БД", e.getMessage());
+            Dialogs.error(Lang.t("msg.err.db"), e.getMessage());
         }
     }
 
@@ -98,7 +100,7 @@ public class ScpListController {
                 dao.insert(obj);
                 reload();
             } catch (SQLException e) {
-                Dialogs.error("Ошибка вставки", e.getMessage());
+                Dialogs.error(Lang.t("msg.err.insert"), e.getMessage());
             }
         });
     }
@@ -106,7 +108,7 @@ public class ScpListController {
     @FXML
     private void onEdit() {
         ScpObject sel = table.getSelectionModel().getSelectedItem();
-        if (sel == null) { Dialogs.warn("Edit", "Выберите запись"); return; }
+        if (sel == null) { Dialogs.warn(Lang.t("btn.edit"), Lang.t("msg.warn.select")); return; }
         edit(sel);
     }
 
@@ -116,7 +118,7 @@ public class ScpListController {
                 dao.update(obj);
                 reload();
             } catch (SQLException e) {
-                Dialogs.error("Ошибка обновления", e.getMessage());
+                Dialogs.error(Lang.t("msg.err.update"), e.getMessage());
             }
         });
     }
@@ -124,19 +126,19 @@ public class ScpListController {
     @FXML
     private void onDelete() {
         ScpObject sel = table.getSelectionModel().getSelectedItem();
-        if (sel == null) { Dialogs.warn("Delete", "Выберите запись"); return; }
-        if (!Dialogs.confirm("Удалить", "Удалить " + sel.itemNumber() + "?")) return;
+        if (sel == null) { Dialogs.warn(Lang.t("btn.delete"), Lang.t("msg.warn.select")); return; }
+        if (!Dialogs.confirm(Lang.t("msg.delete.title"), MessageFormat.format(Lang.t("msg.delete.scp"), sel.itemNumber()))) return;
         try {
             dao.delete(sel.id());
             reload();
         } catch (SQLException e) {
-            Dialogs.error("Ошибка удаления", "Нельзя удалить — есть зависимые записи.\n" + e.getMessage());
+            Dialogs.error(Lang.t("msg.err.delete"), Lang.t("msg.err.deleteFk") + "\n" + e.getMessage());
         }
     }
 
     private Optional<ScpObject> openEditDialog(ScpObject existing) {
         Dialog<ScpObject> dialog = new Dialog<>();
-        dialog.setTitle(existing == null ? "Add SCP Object" : "Edit " + existing.itemNumber());
+        dialog.setTitle(existing == null ? Lang.t("dlg.scp.add") : Lang.t("dlg.scp.edit") + " " + existing.itemNumber());
 
         TextField itemNum = new TextField(existing == null ? "" : existing.itemNumber());
         TextField codeName = new TextField(existing == null ? "" : existing.codeName());
@@ -150,11 +152,11 @@ public class ScpListController {
         grid.setHgap(10); grid.setVgap(10);
         grid.setPadding(new javafx.geometry.Insets(20));
         int row = 0;
-        grid.add(new Label("Item #:"),       0, row);   grid.add(itemNum,    1, row++);
-        grid.add(new Label("Code name:"),    0, row);   grid.add(codeName,   1, row++);
-        grid.add(new Label("Class:"),        0, row);   grid.add(classCb,    1, row++);
-        grid.add(new Label("Discovered:"),   0, row);   grid.add(discovered, 1, row++);
-        grid.add(new Label("Description:"),  0, row);   grid.add(desc,       1, row++);
+        grid.add(new Label(Lang.t("dlg.field.itemNum")),       0, row);   grid.add(itemNum,    1, row++);
+        grid.add(new Label(Lang.t("dlg.field.codeName")),    0, row);   grid.add(codeName,   1, row++);
+        grid.add(new Label(Lang.t("dlg.field.class")),        0, row);   grid.add(classCb,    1, row++);
+        grid.add(new Label(Lang.t("dlg.field.discovered")),   0, row);   grid.add(discovered, 1, row++);
+        grid.add(new Label(Lang.t("dlg.field.description")),  0, row);   grid.add(desc,       1, row++);
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -163,7 +165,7 @@ public class ScpListController {
         dialog.setResultConverter(btn -> {
             if (btn != ButtonType.OK) return null;
             if (itemNum.getText().isBlank() || codeName.getText().isBlank()) {
-                Dialogs.warn("Validation", "Item # и Code name обязательны");
+                Dialogs.warn(Lang.t("msg.validation"), Lang.t("msg.required.itemCode"));
                 return null;
             }
             return new ScpObject(

@@ -8,26 +8,26 @@
     <top>
         <HBox styleClass="toolbar-bar">
             <Label text="▸" styleClass="toolbar-prefix"/>
-            <Label text="INCIDENTS" styleClass="toolbar-title"/>
+            <Label text="%title.incidents" styleClass="toolbar-title"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Label text="From:"/> <DatePicker fx:id="fromDate"/>
-            <Label text="To:"/>   <DatePicker fx:id="toDate"/>
-            <Button text="Apply"   onAction="#onApplyFilter"/>
-            <Button text="Reset"   onAction="#onResetFilter"/>
-            <Button fx:id="addBtn"  text="Add"    onAction="#onAdd"/>
-            <Button fx:id="editBtn" text="Edit"   onAction="#onEdit"/>
-            <Button fx:id="delBtn"  text="Delete" onAction="#onDelete" styleClass="danger"/>
+            <Label text="%filter.from"/> <DatePicker fx:id="fromDate"/>
+            <Label text="%filter.to"/>   <DatePicker fx:id="toDate"/>
+            <Button text="%btn.apply"   onAction="#onApplyFilter"/>
+            <Button text="%btn.reset"   onAction="#onResetFilter"/>
+            <Button fx:id="addBtn"  text="%btn.add"    onAction="#onAdd"/>
+            <Button fx:id="editBtn" text="%btn.edit"   onAction="#onEdit"/>
+            <Button fx:id="delBtn"  text="%btn.delete" onAction="#onDelete" styleClass="danger"/>
         </HBox>
     </top>
     <center>
         <TableView fx:id="table">
             <columns>
-                <TableColumn fx:id="colDate"     text="Occurred"   prefWidth="160"/>
-                <TableColumn fx:id="colScp"      text="SCP"        prefWidth="120"/>
-                <TableColumn fx:id="colSite"     text="Site"       prefWidth="120"/>
-                <TableColumn fx:id="colMtf"      text="MTF"        prefWidth="140"/>
-                <TableColumn fx:id="colSeverity" text="Severity"   prefWidth="80"/>
-                <TableColumn fx:id="colDesc"     text="Description" prefWidth="400"/>
+                <TableColumn fx:id="colDate"     text="%col.occurred"   prefWidth="160"/>
+                <TableColumn fx:id="colScp"      text="%col.scp"        prefWidth="120"/>
+                <TableColumn fx:id="colSite"     text="%col.site"       prefWidth="120"/>
+                <TableColumn fx:id="colMtf"      text="%col.mtf"        prefWidth="140"/>
+                <TableColumn fx:id="colSeverity" text="%col.severity"   prefWidth="80"/>
+                <TableColumn fx:id="colDesc"     text="%col.description" prefWidth="400"/>
             </columns>
         </TableView>
     </center>

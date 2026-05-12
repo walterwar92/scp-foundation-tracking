@@ -8,35 +8,35 @@
     <top>
         <HBox styleClass="toolbar-bar">
             <Label text="▸" styleClass="toolbar-prefix"/>
-            <Label text="PROCEDURE REVISIONS" styleClass="toolbar-title"/>
+            <Label text="%title.procedures" styleClass="toolbar-title"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Button fx:id="addBtn"  text="Add revision"  onAction="#onAdd"/>
-            <Button fx:id="editBtn" text="Edit revision" onAction="#onEdit"/>
-            <Button fx:id="delBtn"  text="Delete"        onAction="#onDelete" styleClass="danger"/>
+            <Button fx:id="addBtn"  text="%btn.add.revision"  onAction="#onAdd"/>
+            <Button fx:id="editBtn" text="%btn.edit.revision" onAction="#onEdit"/>
+            <Button fx:id="delBtn"  text="%btn.delete"        onAction="#onDelete" styleClass="danger"/>
         </HBox>
     </top>
     <center>
         <SplitPane dividerPositions="0.3, 0.6">
             <VBox>
-                <Label text="SCP" styleClass="subheader">
+                <Label text="%col.scp" styleClass="subheader">
                     <padding><Insets left="10" top="6"/></padding>
                 </Label>
                 <ListView fx:id="scpList" VBox.vgrow="ALWAYS"/>
             </VBox>
             <VBox>
-                <Label text="Revisions" styleClass="subheader">
+                <Label text="%col.revisions" styleClass="subheader">
                     <padding><Insets left="10" top="6"/></padding>
                 </Label>
                 <TableView fx:id="revTable" VBox.vgrow="ALWAYS">
                     <columns>
-                        <TableColumn fx:id="colRev"  text="#"        prefWidth="50"/>
-                        <TableColumn fx:id="colDate" text="Date"     prefWidth="120"/>
-                        <TableColumn fx:id="colApp"  text="Approved" prefWidth="200"/>
+                        <TableColumn fx:id="colRev"  text="%col.revNum"        prefWidth="50"/>
+                        <TableColumn fx:id="colDate" text="%col.date"     prefWidth="120"/>
+                        <TableColumn fx:id="colApp"  text="%col.approved" prefWidth="200"/>
                     </columns>
                 </TableView>
             </VBox>
             <VBox>
-                <Label text="Procedure text" styleClass="subheader">
+                <Label text="%col.procText" styleClass="subheader">
                     <padding><Insets left="10" top="6"/></padding>
                 </Label>
                 <TextArea fx:id="textArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS"/>

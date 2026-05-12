@@ -8,20 +8,20 @@
     <top>
         <HBox styleClass="toolbar-bar">
             <Label text="▸" styleClass="toolbar-prefix"/>
-            <Label text="USERS — O5 ONLY" styleClass="toolbar-title"/>
+            <Label text="%title.users" styleClass="toolbar-title"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Button text="Refresh" onAction="#onRefresh"/>
-            <Button text="Add user"    onAction="#onAdd"/>
-            <Button text="Delete user" onAction="#onDelete" styleClass="danger"/>
+            <Button text="%btn.refresh" onAction="#onRefresh"/>
+            <Button text="%btn.add.user"    onAction="#onAdd"/>
+            <Button text="%btn.delete.user" onAction="#onDelete" styleClass="danger"/>
         </HBox>
     </top>
     <center>
         <TableView fx:id="table">
             <columns>
-                <TableColumn fx:id="colLogin"    text="Login"     prefWidth="160"/>
-                <TableColumn fx:id="colName"     text="Person"    prefWidth="240"/>
-                <TableColumn fx:id="colRole"     text="Role"      prefWidth="120"/>
-                <TableColumn fx:id="colCreated"  text="Created"   prefWidth="180"/>
+                <TableColumn fx:id="colLogin"    text="%col.login"     prefWidth="160"/>
+                <TableColumn fx:id="colName"     text="%col.person"    prefWidth="240"/>
+                <TableColumn fx:id="colRole"     text="%col.role"      prefWidth="120"/>
+                <TableColumn fx:id="colCreated"  text="%col.created"   prefWidth="180"/>
             </columns>
         </TableView>
     </center>
