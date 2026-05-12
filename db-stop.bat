@@ -8,19 +8,19 @@ set "PG_DATA=%PG_DIR%\data"
 if exist "%PG_DIR%\bin\pg_ctl.exe" (
     "%PG_DIR%\bin\pg_ctl.exe" status -D "%PG_DATA%" >nul 2>&1
     if errorlevel 1 (
-        echo [db-stop] PostgreSQL не запущен
+        echo [db-stop] PostgreSQL not running
     ) else (
-        echo [db-stop] Остановка PostgreSQL...
+        echo [db-stop] Stopping PostgreSQL...
         "%PG_DIR%\bin\pg_ctl.exe" stop -D "%PG_DATA%" -m fast >nul
     )
 )
 
 tasklist /FI "IMAGENAME eq firebird.exe" 2>nul | find /I "firebird.exe" >nul
 if errorlevel 1 (
-    echo [db-stop] Firebird не запущен
+    echo [db-stop] Firebird not running
 ) else (
-    echo [db-stop] Остановка Firebird...
+    echo [db-stop] Stopping Firebird...
     taskkill /F /IM firebird.exe >nul 2>&1
 )
 
-echo [db-stop] Готово
+echo [db-stop] Done

@@ -1,10 +1,10 @@
 @echo off
 if not exist out\ru\scp\foundation\Main.class (
-    echo ERROR: сначала build.bat
+    echo ERROR: run build.bat first
     exit /b 1
 )
 if not exist config.properties (
-    echo ERROR: нет config.properties. Скопируйте config.example.properties.
+    echo ERROR: config.properties missing. Copy config.example.properties.
     exit /b 1
 )
 

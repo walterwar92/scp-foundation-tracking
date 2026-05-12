@@ -1,22 +1,31 @@
 @echo off
 setlocal enabledelayedexpansion
 
-echo [setup] Проверка Java...
+echo [setup] Checking Java...
 where java >nul 2>nul
 if errorlevel 1 (
-    echo ERROR: java не найдена. Установите JDK 17+ и добавьте в PATH.
+    echo ERROR: java not found. Install JDK 17+ and add it to PATH.
     exit /b 1
 )
 
-for /f "tokens=2 delims==." %%v in ('java -XshowSettings:properties -version 2^>^&1 ^| findstr /c:"java.specification.version"') do (
-    set "JAVA_MAJOR=%%v"
+rem Best-effort major version check (works for Java 17+ which is what we require)
+for /f "tokens=2 delims= " %%v in ('java --version 2^>nul') do (
+    set "JAVA_VER=%%v"
+    goto :got_version
 )
-set "JAVA_MAJOR=!JAVA_MAJOR: =!"
-if !JAVA_MAJOR! lss 17 (
-    echo ERROR: требуется Java 17+, найдена !JAVA_MAJOR!
-    exit /b 1
+:got_version
+if not defined JAVA_VER (
+    echo [setup] WARN: could not detect Java version, proceeding anyway
+) else (
+    for /f "tokens=1 delims=." %%m in ("!JAVA_VER!") do set "JAVA_MAJOR=%%m"
+    if defined JAVA_MAJOR (
+        if !JAVA_MAJOR! lss 17 (
+            echo ERROR: Java !JAVA_VER! detected, need 17+
+            exit /b 1
+        )
+        echo [setup] Java !JAVA_VER! OK
+    )
 )
-echo [setup] Java !JAVA_MAJOR! OK
 
 set "FX_OS=win"
 echo [setup] Platform: %FX_OS%
@@ -40,22 +49,22 @@ if errorlevel 1 exit /b 1
 
 if not exist config.properties (
     copy config.example.properties config.properties >nul
-    echo [setup] Создан config.properties — отредактируйте его перед запуском.
+    echo [setup] Created config.properties - edit it before running.
 )
 
-echo [setup] Готово. Запустите: build.bat ^&^& run.bat
+echo [setup] Done. Run: build.bat ^&^& run.bat
 goto :eof
 
 :download
 set "URL=%~1"
 for %%F in ("%URL%") do set "NAME=%%~nxF"
 if exist "lib\%NAME%" (
-    echo [setup] Уже есть: %NAME%
+    echo [setup] Already present: %NAME%
 ) else (
-    echo [setup] Загрузка: %NAME%
+    echo [setup] Downloading: %NAME%
     curl -fSL -o "lib\%NAME%" "%URL%"
     if errorlevel 1 (
-        echo ERROR: не удалось загрузить %URL%
+        echo ERROR: failed to download %URL%
         exit /b 1
     )
 )

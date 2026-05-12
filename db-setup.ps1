@@ -33,27 +33,32 @@ if (-not (Test-Path 'lib')) {
 
 New-Item -ItemType Directory -Force -Path $DbDir | Out-Null
 
-# ============== 0. xz.exe (нужен для .txz, который Windows tar сам не умеет) ==============
-$XzExe = Join-Path $DbDir 'xz.exe'
-if (-not (Test-Path $XzExe)) {
-    Write-Host "[db-setup] Загрузка xz-utils для распаковки PostgreSQL..."
-    $xzZip = Join-Path $DbDir 'xz.zip'
-    curl.exe -fSL -o $xzZip 'https://github.com/tukaani-project/xz/releases/download/v5.4.6/xz-5.4.6-windows.zip'
-    if ($LASTEXITCODE -ne 0) { Write-Error 'Скачивание xz-utils не удалось' }
-    $xzExtract = Join-Path $DbDir 'xz-extract'
-    if (Test-Path $xzExtract) { Remove-Item -Recurse -Force $xzExtract }
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-    [System.IO.Compression.ZipFile]::ExtractToDirectory($xzZip, $xzExtract)
-    $xzFound = Get-ChildItem -Path $xzExtract -Recurse -Filter 'xz.exe' |
-        Where-Object { $_.Directory.Name -match 'x86-64|x64' } |
-        Select-Object -First 1
-    if (-not $xzFound) {
-        $xzFound = Get-ChildItem -Path $xzExtract -Recurse -Filter 'xz.exe' | Select-Object -First 1
-    }
-    if (-not $xzFound) { Write-Error 'xz.exe не найден в архиве' }
-    Copy-Item $xzFound.FullName $XzExe
-    Remove-Item -Recurse -Force $xzExtract
-    Remove-Item -Force $xzZip
+# ============== 0. Java-инструменты для распаковки .txz ==============
+# Windows tar.exe не умеет xz без внешнего liblzma. Используем чистую Java:
+# commons-compress + xz-java читают .txz напрямую.
+$ToolsDir = Join-Path $DbDir 'tools'
+New-Item -ItemType Directory -Force -Path $ToolsDir | Out-Null
+$CommonsJar = Join-Path $ToolsDir 'commons-compress-1.27.1.jar'
+$XzJar      = Join-Path $ToolsDir 'xz-1.10.jar'
+
+if (-not (Test-Path $CommonsJar)) {
+    Write-Host "[db-setup] Загрузка commons-compress (для распаковки .txz)..."
+    curl.exe -fSL -o $CommonsJar 'https://repo.maven.apache.org/maven2/org/apache/commons/commons-compress/1.27.1/commons-compress-1.27.1.jar'
+    if ($LASTEXITCODE -ne 0) { Write-Error 'Скачивание commons-compress не удалось' }
+}
+if (-not (Test-Path $XzJar)) {
+    Write-Host "[db-setup] Загрузка xz-java..."
+    curl.exe -fSL -o $XzJar 'https://repo.maven.apache.org/maven2/org/tukaani/xz/1.10/xz-1.10.jar'
+    if ($LASTEXITCODE -ne 0) { Write-Error 'Скачивание xz-java не удалось' }
+}
+
+# Компилируем TxzExtractor если ещё не собран
+$TxzClass = 'out\ru\scp\foundation\util\TxzExtractor.class'
+if (-not (Test-Path $TxzClass)) {
+    Write-Host "[db-setup] Компилирую TxzExtractor..."
+    New-Item -ItemType Directory -Force -Path 'out' | Out-Null
+    & javac -encoding UTF-8 -cp "$CommonsJar;$XzJar" -d out 'src\ru\scp\foundation\util\TxzExtractor.java'
+    if ($LASTEXITCODE -ne 0) { Write-Error 'Компиляция TxzExtractor не удалась' }
 }
 
 # ============== 1. Скачиваем portable PostgreSQL ==============
@@ -74,14 +79,9 @@ if (Test-Path (Join-Path $PgDir 'bin\postgres.exe')) {
 
     New-Item -ItemType Directory -Force -Path $PgDir | Out-Null
     $txz = Get-ChildItem -Path $jarExtract -Filter '*.txz' | Select-Object -First 1
-    Write-Host "[db-setup] Декомпрессия XZ $($txz.Name)..."
-    # xz -dk оставляет исходный, создаёт файл без .txz
-    & $XzExe -dk -- $txz.FullName
-    if ($LASTEXITCODE -ne 0) { Write-Error "Декомпрессия XZ не удалась" }
-    $tarPath = $txz.FullName -replace '\.txz$', ''
-    Write-Host "[db-setup] Распаковка TAR..."
-    & tar.exe -xf $tarPath -C $PgDir
-    if ($LASTEXITCODE -ne 0) { Write-Error "Распаковка TAR не удалась" }
+    Write-Host "[db-setup] Распаковка $($txz.Name) через TxzExtractor (Java)..."
+    & java -cp "out;$CommonsJar;$XzJar" ru.scp.foundation.util.TxzExtractor $txz.FullName $PgDir
+    if ($LASTEXITCODE -ne 0) { Write-Error "Распаковка TXZ не удалась" }
 
     Remove-Item -Recurse -Force $jarExtract
     Remove-Item -Force $jarPath
