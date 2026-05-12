@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.geometry.Insets?>
+
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+           fx:controller="ru.scp.foundation.ui.controllers.LoginController"
+           prefWidth="900" prefHeight="600" styleClass="root">
+
+    <!-- Анимированный фон -->
+    <Canvas fx:id="bgCanvas" width="900" height="600"/>
+
+    <!-- Боот-текст слева сверху -->
+    <VBox alignment="TOP_LEFT" StackPane.alignment="TOP_LEFT" maxWidth="400" maxHeight="80">
+        <padding><Insets top="14" left="20"/></padding>
+        <Label fx:id="bootLine" styleClass="boot-text"/>
+    </VBox>
+
+    <!-- Центральная карточка логина -->
+    <VBox alignment="CENTER" spacing="20" maxWidth="500" maxHeight="500" styleClass="login-card">
+        <padding><Insets top="40" right="50" bottom="40" left="50"/></padding>
+
+        <Canvas fx:id="logoCanvas" width="160" height="160"/>
+
+        <Label text="SECURE TERMINAL" styleClass="header"/>
+        <Label text="ACCESS REQUIRED" styleClass="subheader"/>
+
+        <Region prefHeight="10"/>
+
+        <TextField fx:id="loginField" promptText="LOGIN"/>
+        <PasswordField fx:id="passwordField" promptText="PASSWORD"/>
+
+        <Region prefHeight="6"/>
+
+        <Button fx:id="loginButton" text="AUTHENTICATE" onAction="#onLogin"
+                styleClass="primary" prefWidth="260"/>
+
+        <Label fx:id="errorLabel" textFill="#ff5555" wrapText="true"/>
+    </VBox>
+
+</StackPane>
