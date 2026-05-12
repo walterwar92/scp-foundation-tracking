@@ -103,18 +103,32 @@ if (Test-Path (Join-Path $PgData 'PG_VERSION')) {
     $pwFile = Join-Path $DbDir 'pg-pwfile.txt'
     Set-Content -Path $pwFile -Value $PgPass -Encoding ASCII -NoNewline
     $initdb = Join-Path $PgDir 'bin\initdb.exe'
-    & $initdb -D $PgData -U postgres "--pwfile=$pwFile" -E UTF8 --locale=C --auth=md5
-    if ($LASTEXITCODE -ne 0) {
+    # На Windows с русской системной локалью postgres внедряет cp1251-байты
+    # в bootstrap SQL — UTF8-БД падает. Форсим English/C для initdb-процесса.
+    $savedLcAll = $env:LC_ALL
+    $savedLang  = $env:LANG
+    $savedLcMsg = $env:LC_MESSAGES
+    $env:LC_ALL = 'C'
+    $env:LANG = 'C'
+    $env:LC_MESSAGES = 'C'
+    try {
+        & $initdb -D $PgData -U postgres "--pwfile=$pwFile" -E UTF8 --locale=C --lc-messages=C --auth=md5
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "initdb не удался"
+        }
+    } finally {
+        $env:LC_ALL = $savedLcAll
+        $env:LANG = $savedLang
+        $env:LC_MESSAGES = $savedLcMsg
         Remove-Item -Force $pwFile -ErrorAction SilentlyContinue
-        Write-Error "initdb не удался"
     }
-    Remove-Item -Force $pwFile
 
     # Прописываем порт в postgresql.conf
     Add-Content -Path (Join-Path $PgData 'postgresql.conf') -Value @"
 
 port = $PgPort
 listen_addresses = 'localhost'
+lc_messages = 'C'
 "@
 }
 
