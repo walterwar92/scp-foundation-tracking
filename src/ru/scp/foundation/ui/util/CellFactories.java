@@ -103,8 +103,9 @@ public final class CellFactories {
     }
 
     /**
-     * Перенос длинного текста в ячейке + tooltip с полным значением при наведении.
-     * Высота строки автоматически подстраивается под содержимое.
+     * Длинный текст переносится по словам внутри ячейки. Высота строки
+     * автоматически вырастает под содержимое — пользователь видит всё без
+     * tooltip-а (раньше tooltip конфликтовал с анимированным фоном и мерцал).
      */
     public static <S> Callback<TableColumn<S, String>, TableCell<S, String>> wrappingText() {
         return col -> new TableCell<>() {
@@ -113,6 +114,7 @@ public final class CellFactories {
                 label.setWrapText(true);
                 label.maxWidthProperty().bind(col.widthProperty().subtract(20));
                 label.getStyleClass().add("cell-wrap");
+                setPrefHeight(Region.USE_COMPUTED_SIZE);
             }
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -120,24 +122,11 @@ public final class CellFactories {
                 if (empty || item == null || item.isEmpty()) {
                     setText(null);
                     setGraphic(null);
-                    setTooltip(null);
                     return;
                 }
                 label.setText(item);
                 setGraphic(label);
                 setText(null);
-                // Tooltip только если текст длинный — иначе обычный wrap справится сам
-                if (item.length() > 70) {
-                    Tooltip tip = new Tooltip(item);
-                    tip.setMaxWidth(520);
-                    tip.setWrapText(true);
-                    tip.setShowDelay(Duration.millis(300));
-                    tip.setShowDuration(Duration.seconds(30));
-                    tip.getStyleClass().add("scp-tooltip");
-                    setTooltip(tip);
-                } else {
-                    setTooltip(null);
-                }
             }
         };
     }
