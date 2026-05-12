@@ -1,7 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.Label?>
-<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="ru.scp.foundation.ui.controllers.MtfListController">
-    <Label text="MTF TEAMS — placeholder"/>
-</VBox>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ru.scp.foundation.ui.controllers.MtfListController">
+    <top>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <padding><Insets top="10" right="14" bottom="10" left="14"/></padding>
+            <Label text="MOBILE TASK FORCES" styleClass="header"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Refresh" onAction="#onRefresh"/>
+            <Button fx:id="addTeamBtn"  text="Add team"     onAction="#onAddTeam"/>
+            <Button fx:id="editTeamBtn" text="Edit team"    onAction="#onEditTeam"/>
+            <Button fx:id="delTeamBtn"  text="Delete team"  onAction="#onDeleteTeam" styleClass="danger"/>
+        </HBox>
+    </top>
+    <center>
+        <SplitPane dividerPositions="0.5">
+            <VBox>
+                <Label text="Teams" styleClass="subheader">
+                    <padding><Insets left="10" top="6"/></padding>
+                </Label>
+                <TableView fx:id="teamsTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colCallsign" text="Callsign"        prefWidth="160"/>
+                        <TableColumn fx:id="colSpec"     text="Specialization"  prefWidth="280"/>
+                        <TableColumn fx:id="colBase"    text="Base site"        prefWidth="120"/>
+                    </columns>
+                </TableView>
+            </VBox>
+            <VBox>
+                <HBox spacing="6" alignment="CENTER_LEFT">
+                    <padding><Insets left="10" top="6" right="10"/></padding>
+                    <Label text="Members" styleClass="subheader"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="addMemberBtn" text="Add member"   onAction="#onAddMember"/>
+                    <Button fx:id="delMemberBtn" text="Remove"       onAction="#onRemoveMember" styleClass="danger"/>
+                </HBox>
+                <TableView fx:id="membersTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colMemberName" text="Personnel" prefWidth="220"/>
+                        <TableColumn fx:id="colJoined"     text="Joined"    prefWidth="120"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </SplitPane>
+    </center>
+</BorderPane>
