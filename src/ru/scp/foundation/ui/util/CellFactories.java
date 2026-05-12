@@ -8,6 +8,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
 import ru.scp.foundation.model.ObjectClass;
+import ru.scp.foundation.util.Lang;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -39,7 +40,8 @@ public final class CellFactories {
                     setGraphic(null);
                     return;
                 }
-                Label chip = new Label(item.dbValue().toUpperCase());
+                String key = "class." + item.name().toLowerCase();
+                Label chip = new Label(Lang.t(key));
                 chip.getStyleClass().setAll("class-chip", item.name().toLowerCase());
                 setText(null);
                 setGraphic(chip);
