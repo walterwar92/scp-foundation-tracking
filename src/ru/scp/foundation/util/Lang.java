@@ -15,8 +15,8 @@ public final class Lang {
     public static final Locale EN = Locale.forLanguageTag("en");
     public static final Locale RU = Locale.forLanguageTag("ru");
 
-    private static Locale current = EN;
-    private static ResourceBundle bundle = load(EN);
+    private static Locale current = RU;
+    private static ResourceBundle bundle = load(RU);
 
     private Lang() {}
 

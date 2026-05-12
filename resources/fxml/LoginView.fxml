@@ -27,11 +27,6 @@
         <StackPane.margin><Insets right="18" bottom="14"/></StackPane.margin>
     </Label>
 
-    <!-- Слой 3b: переключатель языка в правом верхнем углу -->
-    <Button fx:id="langButton" text="EN / RU" onAction="#onToggleLang"
-            StackPane.alignment="TOP_RIGHT">
-        <StackPane.margin><Insets top="14" right="18"/></StackPane.margin>
-    </Button>
 
     <!-- Слой 4: центральная карточка логина -->
     <VBox alignment="CENTER" spacing="10" maxWidth="500" maxHeight="540" styleClass="login-card">

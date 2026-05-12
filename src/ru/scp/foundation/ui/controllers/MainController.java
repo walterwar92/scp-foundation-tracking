@@ -98,31 +98,6 @@ public class MainController {
             String.format("0x%04X", (int)(session.userId() * 1103515245L & 0xFFFF)));
     }
 
-    @FXML
-    private void onToggleLang() {
-        Lang.toggle();
-        // Перезагружаем MainView с новым бандлом — возвращаемся в welcome-состояние.
-        bg.stop();
-        miniLogo.stop();
-        welcomeLogo.stop();
-        if (clockTimer != null) clockTimer.stop();
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainView.fxml"));
-            loader.setResources(Lang.bundle());
-            Parent root = loader.load();
-            MainController next = loader.getController();
-            next.setSession(session);
-
-            Stage stage = (Stage) contentArea.getScene().getWindow();
-            javafx.scene.Scene scene = new javafx.scene.Scene(root, stage.getScene().getWidth(), stage.getScene().getHeight());
-            scene.getStylesheets().add(getClass().getResource("/css/scp.css").toExternalForm());
-            stage.setScene(scene);
-            stage.setTitle(Lang.t("app.title") + " — " + session.displayName());
-        } catch (Exception e) {
-            Dialogs.error(Lang.t("msg.err.openScreen"), e.getMessage());
-        }
-    }
-
     private void setActiveNav(Button activeBtn) {
         Button[] all = { navScp, navSites, navPersonnel, navMtf, navIncidents,
                          navHistory, navProcedures, usersButton };

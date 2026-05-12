@@ -153,27 +153,6 @@ public class LoginController {
         openMain(result.get());
     }
 
-    @FXML
-    private void onToggleLang() {
-        // Останавливаем анимации/тред и перезагружаем сцену логина с другим бандлом.
-        Lang.toggle();
-        if (bootThread != null) bootThread.interrupt();
-        bg.stop();
-        logo.stop();
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/LoginView.fxml"));
-            loader.setResources(Lang.bundle());
-            Parent root = loader.load();
-            Stage stage = (Stage) loginButton.getScene().getWindow();
-            Scene scene = new Scene(root, 900, 600);
-            scene.getStylesheets().add(getClass().getResource("/css/scp.css").toExternalForm());
-            stage.setTitle(Lang.t("app.title"));
-            stage.setScene(scene);
-        } catch (Exception ex) {
-            errorLabel.setText(ex.getMessage());
-        }
-    }
-
     private void openMain(Session session) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainView.fxml"));
