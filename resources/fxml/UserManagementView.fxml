@@ -1,7 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.Label?>
-<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="ru.scp.foundation.ui.controllers.UserManagementController">
-    <Label text="USER MANAGEMENT — placeholder"/>
-</VBox>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ru.scp.foundation.ui.controllers.UserManagementController">
+    <top>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <padding><Insets top="10" right="14" bottom="10" left="14"/></padding>
+            <Label text="USERS — O5 ONLY" styleClass="header"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Refresh" onAction="#onRefresh"/>
+            <Button text="Add user"    onAction="#onAdd"/>
+            <Button text="Delete user" onAction="#onDelete" styleClass="danger"/>
+        </HBox>
+    </top>
+    <center>
+        <TableView fx:id="table">
+            <columns>
+                <TableColumn fx:id="colLogin"    text="Login"     prefWidth="160"/>
+                <TableColumn fx:id="colName"     text="Person"    prefWidth="240"/>
+                <TableColumn fx:id="colRole"     text="Role"      prefWidth="120"/>
+                <TableColumn fx:id="colCreated"  text="Created"   prefWidth="180"/>
+            </columns>
+        </TableView>
+    </center>
+</BorderPane>
