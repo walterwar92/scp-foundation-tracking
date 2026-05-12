@@ -22,24 +22,24 @@
 
             <!-- Меню разделов -->
             <VBox styleClass="sidebar-nav">
-                <Button fx:id="navScp"        text="▸ %nav.scp"         onAction="#showScpObjects" styleClass="nav-btn"/>
-                <Button fx:id="navSites"      text="▸ %nav.sites"       onAction="#showSites"      styleClass="nav-btn"/>
-                <Button fx:id="navPersonnel"  text="▸ %nav.personnel"   onAction="#showPersonnel"  styleClass="nav-btn"/>
-                <Button fx:id="navMtf"        text="▸ %nav.mtf"         onAction="#showMtfTeams"   styleClass="nav-btn"/>
-                <Button fx:id="navIncidents"  text="▸ %nav.incidents"   onAction="#showIncidents"  styleClass="nav-btn"/>
-                <Button fx:id="navHistory"    text="▸ %nav.history"     onAction="#showHistory"    styleClass="nav-btn"/>
-                <Button fx:id="navProcedures" text="▸ %nav.procedures"  onAction="#showProcedures" styleClass="nav-btn"/>
+                <Button fx:id="navScp"        text="%nav.scp"         onAction="#showScpObjects" styleClass="nav-btn"/>
+                <Button fx:id="navSites"      text="%nav.sites"       onAction="#showSites"      styleClass="nav-btn"/>
+                <Button fx:id="navPersonnel"  text="%nav.personnel"   onAction="#showPersonnel"  styleClass="nav-btn"/>
+                <Button fx:id="navMtf"        text="%nav.mtf"         onAction="#showMtfTeams"   styleClass="nav-btn"/>
+                <Button fx:id="navIncidents"  text="%nav.incidents"   onAction="#showIncidents"  styleClass="nav-btn"/>
+                <Button fx:id="navHistory"    text="%nav.history"     onAction="#showHistory"    styleClass="nav-btn"/>
+                <Button fx:id="navProcedures" text="%nav.procedures"  onAction="#showProcedures" styleClass="nav-btn"/>
                 <Region prefHeight="6"/>
                 <Region styleClass="sidebar-section-divider"/>
                 <Region prefHeight="6"/>
-                <Button fx:id="usersButton"   text="▸ %nav.users"       onAction="#showUsers"      styleClass="nav-btn"/>
+                <Button fx:id="usersButton"   text="%nav.users"       onAction="#showUsers"      styleClass="nav-btn"/>
             </VBox>
 
             <Region VBox.vgrow="ALWAYS"/>
 
             <!-- Footer: LOGOUT -->
             <VBox styleClass="sidebar-footer">
-                <Button text="⏻ %main.logout" onAction="#onLogout" styleClass="nav-btn,danger"/>
+                <Button text="%main.logout" onAction="#onLogout" styleClass="nav-btn,danger"/>
             </VBox>
         </VBox>
     </left>
