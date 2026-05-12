@@ -103,18 +103,29 @@ public final class CellFactories {
     }
 
     /**
-     * Длинный текст переносится по словам внутри ячейки. Высота строки
-     * автоматически вырастает под содержимое — пользователь видит всё без
-     * tooltip-а (раньше tooltip конфликтовал с анимированным фоном и мерцал).
+     * Длинный текст переносится по словам внутри ячейки. При наведении на
+     * ячейку показывается tooltip с полным текстом — настроен на INDEFINITE
+     * показ, чтобы анимированный фон не сбивал событие hover.
+     *
+     * Tooltip привязывается к самой ячейке через setTooltip — это работает
+     * стабильнее, чем Tooltip.install на динамически создаваемом Label.
      */
     public static <S> Callback<TableColumn<S, String>, TableCell<S, String>> wrappingText() {
         return col -> new TableCell<>() {
             private final Label label = new Label();
+            private final Tooltip tip = new Tooltip();
             {
                 label.setWrapText(true);
                 label.maxWidthProperty().bind(col.widthProperty().subtract(20));
                 label.getStyleClass().add("cell-wrap");
                 setPrefHeight(Region.USE_COMPUTED_SIZE);
+
+                tip.setMaxWidth(540);
+                tip.setWrapText(true);
+                tip.setShowDelay(Duration.millis(120));
+                tip.setShowDuration(Duration.INDEFINITE);
+                tip.setHideDelay(Duration.millis(150));
+                tip.getStyleClass().add("scp-tooltip");
             }
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -122,11 +133,14 @@ public final class CellFactories {
                 if (empty || item == null || item.isEmpty()) {
                     setText(null);
                     setGraphic(null);
+                    setTooltip(null);
                     return;
                 }
                 label.setText(item);
                 setGraphic(label);
                 setText(null);
+                tip.setText(item);
+                setTooltip(tip);
             }
         };
     }
