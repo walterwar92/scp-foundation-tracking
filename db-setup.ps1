@@ -33,6 +33,9 @@ if (-not (Test-Path 'lib')) {
 
 New-Item -ItemType Directory -Force -Path $DbDir | Out-Null
 
+# Подгружаем тип ZipFile один раз для всего скрипта
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+
 # ============== 0. Java-инструменты для распаковки .txz ==============
 # Windows tar.exe не умеет xz без внешнего liblzma. Используем чистую Java:
 # commons-compress + xz-java читают .txz напрямую.
