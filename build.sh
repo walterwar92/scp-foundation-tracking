@@ -13,7 +13,8 @@ mkdir -p out
 CP="lib/*"
 
 echo "[build] Компиляция..."
-find src -name "*.java" > sources.txt
+# Исключаем TxzExtractor — нужен только в db-setup и зависит от db-runtime/tools/*.jar
+find src -name "*.java" -not -name 'TxzExtractor.java' > sources.txt
 javac -d out -cp "$CP" @sources.txt
 rm sources.txt
 
