@@ -240,7 +240,20 @@ try {
     $fbDbDirShort = $fbDbDir
 }
 $fbDbAbsPathForAlias = Join-Path $fbDbDirShort 'scp_foundation.fdb'
-Write-Host "[db-setup] FDB-путь (short): $fbDbAbsPathForAlias"
+
+# Если 8.3 не помог (на системе отключён) и в пути остался не-ASCII —
+# переезжаем в C:\Users\Public (гарантированно ASCII, без прав админа).
+if ($fbDbAbsPathForAlias -match '[^\x00-\x7F]') {
+    Write-Host "[db-setup] 8.3 short paths недоступны, переезд FDB в C:\Users\Public..."
+    $publicFdbDir = 'C:\Users\Public\scp-foundation-fdb'
+    New-Item -ItemType Directory -Force -Path $publicFdbDir | Out-Null
+    $fbDbAbsPathForAlias = Join-Path $publicFdbDir 'scp_foundation.fdb'
+}
+Write-Host "[db-setup] FDB target: $fbDbAbsPathForAlias"
+
+# Также обновляем переменные, которые используются ниже для проверок/удаления FDB
+$fbDbAbsPath = $fbDbAbsPathForAlias
+$Script:FbDbActualPath = $fbDbAbsPathForAlias
 
 $dbConf = Join-Path $FbDir 'databases.conf'
 $aliasLine = "scp = $fbDbAbsPathForAlias"
@@ -269,10 +282,22 @@ if ($aliasNeedsRewrite) {
     $fbProc = Get-Process firebird -ErrorAction SilentlyContinue
     if ($fbProc) {
         Write-Host "[db-setup] Перезагрузка Firebird для применения алиаса..."
-        Stop-Process -Id $fbProc.Id -Force -ErrorAction SilentlyContinue
-        Start-Sleep -Seconds 2
+        & taskkill.exe /F /IM firebird.exe 2>&1 | Out-Null
+        Start-Sleep -Seconds 3
+        # Проверяем что процесс действительно умер
+        $still = Get-Process firebird -ErrorAction SilentlyContinue
+        if ($still) {
+            Write-Host "[db-setup] WARN: Firebird не умер, делаю Stop-Process..."
+            Stop-Process -Id $still.Id -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 2
+        }
     }
 }
+
+# Диагностика: показываем какой databases.conf видит Firebird
+Write-Host "[db-setup] ---- databases.conf ----"
+Get-Content $dbConf | ForEach-Object { Write-Host "    $_" }
+Write-Host "[db-setup] ---- end ----"
 
 # ============== 8a. Bootstrap SYSDBA в security database ==============
 # Firebird 5 ставит security5.fdb пустой. Чтобы создать SYSDBA, надо
@@ -329,7 +354,7 @@ QUIT;
             if (Test-Path $FbSeededMarkerReset) {
                 Remove-Item -Force $FbSeededMarkerReset
             }
-            $fbDbReset = Join-Path $FbDir 'databases\scp_foundation.fdb'
+            $fbDbReset = $Script:FbDbActualPath
             if (Test-Path $fbDbReset) {
                 Remove-Item -Force $fbDbReset
             }
@@ -351,8 +376,9 @@ if (-not $fbProc) {
 }
 
 # ============== 9. Создание Firebird БД + применение SQL ==============
+# $fbDbAbsPath = реальный путь к FDB-файлу (мог быть переехан в Public)
 $fbAbsPath = (Resolve-Path -LiteralPath $FbDir).Path
-$fbDbAbsPath = Join-Path $fbAbsPath 'databases\scp_foundation.fdb'
+$fbDbAbsPath = $Script:FbDbActualPath
 
 $FbSeededMarker = Join-Path $DbDir '.firebird-seeded'
 if (Test-Path $FbSeededMarker) {
