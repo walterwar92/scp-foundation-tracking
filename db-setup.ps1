@@ -227,36 +227,51 @@ if (Test-Path (Join-Path $FbDir 'firebird.exe')) {
 New-Item -ItemType Directory -Force -Path (Join-Path $FbDir 'databases') | Out-Null
 
 # ============== 7b. databases.conf: ASCII-алиас 'scp' для нашей БД ==============
-# JDBC URL с кириллицей в пути падает на Jaybird ("Cannot transliterate
-# character between character sets", SQLSTATE 08001). Решение — алиас.
+# JDBC URL с кириллицей в пути падает на Jaybird (SQLSTATE 08001).
+# Используем 8.3 короткий путь Windows для databases-каталога — он гарантированно
+# ASCII (e.g. "C:\Users\РОМАН~1\Desktop\BD~1\..."), Firebird парсит без проблем.
 $fbAbsPathForAlias = (Resolve-Path -LiteralPath $FbDir).Path
-$fbDbAbsPathForAlias = Join-Path $fbAbsPathForAlias 'databases\scp_foundation.fdb'
+$fbDbDir = Join-Path $fbAbsPathForAlias 'databases'
+New-Item -ItemType Directory -Force -Path $fbDbDir | Out-Null
+try {
+    $fso = New-Object -ComObject Scripting.FileSystemObject
+    $fbDbDirShort = $fso.GetFolder($fbDbDir).ShortPath
+} catch {
+    $fbDbDirShort = $fbDbDir
+}
+$fbDbAbsPathForAlias = Join-Path $fbDbDirShort 'scp_foundation.fdb'
+Write-Host "[db-setup] FDB-путь (short): $fbDbAbsPathForAlias"
+
 $dbConf = Join-Path $FbDir 'databases.conf'
 $aliasLine = "scp = $fbDbAbsPathForAlias"
-$aliasJustAdded = $false
+$aliasNeedsRewrite = $true
 if (Test-Path $dbConf) {
     $dbConfText = Get-Content $dbConf -Raw -ErrorAction SilentlyContinue
-    if ($dbConfText -notmatch '(?m)^\s*scp\s*=') {
-        Add-Content -Path $dbConf -Value "`n# SCP Foundation portable alias`n$aliasLine`n" -Encoding UTF8
-        Write-Host "[db-setup] Алиас 'scp' добавлен в databases.conf"
-        $aliasJustAdded = $true
+    # Если строка алиаса уже та самая — не трогаем
+    if ($dbConfText -match [regex]::Escape($aliasLine)) {
+        $aliasNeedsRewrite = $false
+    } else {
+        # Удаляем любую старую строку 'scp = ...' (могла быть с длинным путём)
+        $dbConfText = ($dbConfText -split "`r?`n" | Where-Object {
+            $_ -notmatch '^\s*scp\s*=' -and $_ -notmatch '^\s*#\s*SCP Foundation portable alias'
+        }) -join "`n"
+        # Пишем без BOM в ASCII (путь после short-conversion это позволяет)
+        [System.IO.File]::WriteAllText($dbConf, $dbConfText.TrimEnd() + "`n`n# SCP Foundation portable alias`n$aliasLine`n", [System.Text.Encoding]::ASCII)
+        Write-Host "[db-setup] Алиас 'scp' обновлён в databases.conf"
     }
 } else {
-    Set-Content -Path $dbConf -Value "# SCP Foundation portable alias`n$aliasLine`n" -Encoding UTF8
+    [System.IO.File]::WriteAllText($dbConf, "# SCP Foundation portable alias`n$aliasLine`n", [System.Text.Encoding]::ASCII)
     Write-Host "[db-setup] databases.conf создан с алиасом 'scp'"
-    $aliasJustAdded = $true
 }
 
-# Если конфиг только что изменили — гасим запущенный сервер чтобы перечитал
-$AliasReloadMarker = Join-Path $DbDir '.firebird-alias-applied'
-if ($aliasJustAdded -or -not (Test-Path $AliasReloadMarker)) {
+# Каждый раз когда мы трогаем databases.conf — перезагружаем сервер
+if ($aliasNeedsRewrite) {
     $fbProc = Get-Process firebird -ErrorAction SilentlyContinue
     if ($fbProc) {
         Write-Host "[db-setup] Перезагрузка Firebird для применения алиаса..."
         Stop-Process -Id $fbProc.Id -Force -ErrorAction SilentlyContinue
         Start-Sleep -Seconds 2
     }
-    Set-Content -Path $AliasReloadMarker -Value (Get-Date -Format 'o') -Encoding ASCII
 }
 
 # ============== 8a. Bootstrap SYSDBA в security database ==============
