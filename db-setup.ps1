@@ -230,28 +230,15 @@ New-Item -ItemType Directory -Force -Path (Join-Path $FbDir 'databases') | Out-N
 # JDBC URL с кириллицей в пути падает на Jaybird (SQLSTATE 08001).
 # Используем 8.3 короткий путь Windows для databases-каталога — он гарантированно
 # ASCII (e.g. "C:\Users\РОМАН~1\Desktop\BD~1\..."), Firebird парсит без проблем.
-$fbAbsPathForAlias = (Resolve-Path -LiteralPath $FbDir).Path
-$fbDbDir = Join-Path $fbAbsPathForAlias 'databases'
-New-Item -ItemType Directory -Force -Path $fbDbDir | Out-Null
-try {
-    $fso = New-Object -ComObject Scripting.FileSystemObject
-    $fbDbDirShort = $fso.GetFolder($fbDbDir).ShortPath
-} catch {
-    $fbDbDirShort = $fbDbDir
-}
-$fbDbAbsPathForAlias = Join-Path $fbDbDirShort 'scp_foundation.fdb'
-
-# Если 8.3 не помог (на системе отключён) и в пути остался не-ASCII —
-# переезжаем в C:\Users\Public (гарантированно ASCII, без прав админа).
-if ($fbDbAbsPathForAlias -match '[^\x00-\x7F]') {
-    Write-Host "[db-setup] 8.3 short paths недоступны, переезд FDB в C:\Users\Public..."
-    $publicFdbDir = 'C:\Users\Public\scp-foundation-fdb'
-    New-Item -ItemType Directory -Force -Path $publicFdbDir | Out-Null
-    $fbDbAbsPathForAlias = Join-Path $publicFdbDir 'scp_foundation.fdb'
-}
+# FDB храним в C:\Users\Public — гарантированно ASCII-путь без пробелов,
+# работает без админских прав и без зависимости от 8.3 short paths
+# (которые могут быть отключены в системе).
+$publicFdbDir = 'C:\Users\Public\scp-foundation-fdb'
+New-Item -ItemType Directory -Force -Path $publicFdbDir | Out-Null
+$fbDbAbsPathForAlias = Join-Path $publicFdbDir 'scp_foundation.fdb'
 Write-Host "[db-setup] FDB target: $fbDbAbsPathForAlias"
 
-# Также обновляем переменные, которые используются ниже для проверок/удаления FDB
+# Обновляем переменные, которые используются ниже для проверок/удаления FDB
 $fbDbAbsPath = $fbDbAbsPathForAlias
 $Script:FbDbActualPath = $fbDbAbsPathForAlias
 
@@ -404,9 +391,9 @@ if (Test-Path $FbSeededMarker) {
         Write-Host "[db-setup] FDB-файл существует, пропускаю создание"
     } else {
         Write-Host "[db-setup] Создание Firebird БД через алиас 'scp'..."
-        # Используем алиас 'scp' (ASCII) вместо абсолютного пути с кириллицей —
-        # Jaybird падает на транслитерации Cyrillic в connection string.
-        $createUrl = "jdbc:firebirdsql://localhost:$FbPort/scp?charSet=UTF8&createDatabaseIfNotExist=true&isc_dpb_force_write=true"
+        # Используем алиас 'scp' (ASCII) вместо абсолютного пути с кириллицей.
+        # isc_dpb_force_write убран — Jaybird парсит его как Integer не Boolean.
+        $createUrl = "jdbc:firebirdsql://localhost:$FbPort/scp?charSet=UTF8&createDatabaseIfNotExist=true"
         Invoke-Sql 'org.firebirdsql.jdbc.FBDriver' $createUrl `
             'SYSDBA' $FbPass '-c' 'SELECT 1 FROM RDB$DATABASE' $true
     }
