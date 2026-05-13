@@ -227,22 +227,36 @@ if (Test-Path (Join-Path $FbDir 'firebird.exe')) {
 New-Item -ItemType Directory -Force -Path (Join-Path $FbDir 'databases') | Out-Null
 
 # ============== 7b. databases.conf: ASCII-алиас 'scp' для нашей БД ==============
-# JDBC URL с кириллицей в пути (например, "...Роман\Desktop\BD project\...")
-# падает на Jaybird: "Cannot transliterate character between character sets"
-# (SQLSTATE 08001). Решение — алиас в databases.conf, тогда в URL только ASCII.
+# JDBC URL с кириллицей в пути падает на Jaybird ("Cannot transliterate
+# character between character sets", SQLSTATE 08001). Решение — алиас.
 $fbAbsPathForAlias = (Resolve-Path -LiteralPath $FbDir).Path
 $fbDbAbsPathForAlias = Join-Path $fbAbsPathForAlias 'databases\scp_foundation.fdb'
 $dbConf = Join-Path $FbDir 'databases.conf'
 $aliasLine = "scp = $fbDbAbsPathForAlias"
+$aliasJustAdded = $false
 if (Test-Path $dbConf) {
     $dbConfText = Get-Content $dbConf -Raw -ErrorAction SilentlyContinue
     if ($dbConfText -notmatch '(?m)^\s*scp\s*=') {
         Add-Content -Path $dbConf -Value "`n# SCP Foundation portable alias`n$aliasLine`n" -Encoding UTF8
         Write-Host "[db-setup] Алиас 'scp' добавлен в databases.conf"
+        $aliasJustAdded = $true
     }
 } else {
     Set-Content -Path $dbConf -Value "# SCP Foundation portable alias`n$aliasLine`n" -Encoding UTF8
     Write-Host "[db-setup] databases.conf создан с алиасом 'scp'"
+    $aliasJustAdded = $true
+}
+
+# Если конфиг только что изменили — гасим запущенный сервер чтобы перечитал
+$AliasReloadMarker = Join-Path $DbDir '.firebird-alias-applied'
+if ($aliasJustAdded -or -not (Test-Path $AliasReloadMarker)) {
+    $fbProc = Get-Process firebird -ErrorAction SilentlyContinue
+    if ($fbProc) {
+        Write-Host "[db-setup] Перезагрузка Firebird для применения алиаса..."
+        Stop-Process -Id $fbProc.Id -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 2
+    }
+    Set-Content -Path $AliasReloadMarker -Value (Get-Date -Format 'o') -Encoding ASCII
 }
 
 # ============== 8a. Bootstrap SYSDBA в security database ==============

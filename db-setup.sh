@@ -184,6 +184,8 @@ else
     # Jaybird падает на транслитерации Cyrillic в JDBC URL.
     FB_DB_CONF="$FB_DIR/databases.conf"
     FB_ALIAS_TARGET="$ROOT/$FB_DIR/databases/scp_foundation.fdb"
+    ALIAS_RELOAD_MARKER="$DB/.firebird-alias-applied"
+    ALIAS_JUST_ADDED=0
     if ! grep -q "^scp\s*=" "$FB_DB_CONF" 2>/dev/null; then
         {
             echo ""
@@ -191,6 +193,17 @@ else
             echo "scp = $FB_ALIAS_TARGET"
         } >> "$FB_DB_CONF"
         echo "[db-setup] Алиас 'scp' добавлен в databases.conf"
+        ALIAS_JUST_ADDED=1
+    fi
+    # Если алиас только что добавили или маркер потерян — перезагружаем сервер
+    if [ "$ALIAS_JUST_ADDED" = "1" ] || [ ! -f "$ALIAS_RELOAD_MARKER" ]; then
+        if [ -f "$DB/pids/firebird.pid" ] && kill -0 "$(cat "$DB/pids/firebird.pid")" 2>/dev/null; then
+            echo "[db-setup] Перезагрузка Firebird для применения алиаса..."
+            kill "$(cat "$DB/pids/firebird.pid")" 2>/dev/null || true
+            sleep 2
+            rm -f "$DB/pids/firebird.pid"
+        fi
+        date -u +%FT%TZ > "$ALIAS_RELOAD_MARKER"
     fi
 
     # Bootstrap SYSDBA в security database (FB5 ставит её пустой).
