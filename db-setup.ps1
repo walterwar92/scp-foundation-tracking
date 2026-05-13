@@ -387,19 +387,21 @@ $FbSeededMarker = Join-Path $DbDir '.firebird-seeded'
 if (Test-Path $FbSeededMarker) {
     Write-Host "[db-setup] Firebird уже инициализирован — пропускаю SQL"
 } else {
+    # Используем прямой ASCII-путь к FDB в JDBC URL (forward slashes, без алиаса).
+    # Алиас 'scp' оставляем в databases.conf на случай если нужно для других утилит,
+    # но JDBC URL теперь работает без него — путь полностью ASCII.
+    $fbDbUrlPath = $fbDbAbsPath -replace '\\', '/'
     if (Test-Path $fbDbAbsPath) {
         Write-Host "[db-setup] FDB-файл существует, пропускаю создание"
     } else {
-        Write-Host "[db-setup] Создание Firebird БД через алиас 'scp'..."
-        # Используем алиас 'scp' (ASCII) вместо абсолютного пути с кириллицей.
-        # isc_dpb_force_write убран — Jaybird парсит его как Integer не Boolean.
-        $createUrl = "jdbc:firebirdsql://localhost:$FbPort/scp?charSet=UTF8&createDatabaseIfNotExist=true"
+        Write-Host "[db-setup] Создание Firebird БД ($fbDbUrlPath)..."
+        $createUrl = "jdbc:firebirdsql://localhost:$FbPort/$fbDbUrlPath?charSet=UTF8&createDatabaseIfNotExist=true"
         Invoke-Sql 'org.firebirdsql.jdbc.FBDriver' $createUrl `
             'SYSDBA' $FbPass '-c' 'SELECT 1 FROM RDB$DATABASE' $true
     }
 
     Write-Host "[db-setup] Применение schema/constraints/seed (Firebird)..."
-    $fbJdbc = "jdbc:firebirdsql://localhost:$FbPort/scp?charSet=UTF8"
+    $fbJdbc = "jdbc:firebirdsql://localhost:$FbPort/$fbDbUrlPath?charSet=UTF8"
     foreach ($f in @('01_schema.sql', '02_constraints.sql', '03_seed.sql')) {
         Write-Host "  sql\firebird\$f"
         Invoke-Sql 'org.firebirdsql.jdbc.FBDriver' $fbJdbc `
@@ -419,10 +421,10 @@ db.url=jdbc:postgresql://localhost:$PgPort/$PgDbName
 db.user=$PgUser
 db.password=$PgPass
 
-# Firebird (портативный, db-runtime/firebird) - раскомментируйте и закомментируйте Postgres:
-# Алиас 'scp' определён в db-runtime/firebird/databases.conf.
+# Firebird (портативный, FDB в C:\Users\Public\scp-foundation-fdb)
+# Раскомментируйте и закомментируйте Postgres:
 # db.dialect=firebird
-# db.url=jdbc:firebirdsql://localhost:$FbPort/scp?charSet=UTF8
+# db.url=jdbc:firebirdsql://localhost:$FbPort/$fbDbUrlPath?charSet=UTF8
 # db.user=SYSDBA
 # db.password=$FbPass
 "@
