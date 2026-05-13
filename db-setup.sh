@@ -198,8 +198,8 @@ else
             echo "[db-setup] Bootstrap SYSDBA в $SECURITY_DB (embedded)..."
             BOOTSTRAP_SQL=$(mktemp)
             cat > "$BOOTSTRAP_SQL" <<EOF
-CREATE USER SYSDBA PASSWORD 'masterkey' USING PLUGIN Srp;
-CREATE USER SYSDBA PASSWORD 'masterkey' USING PLUGIN Legacy_UserManager;
+CREATE OR ALTER USER SYSDBA PASSWORD 'masterkey' USING PLUGIN Srp;
+CREATE OR ALTER USER SYSDBA PASSWORD 'masterkey' USING PLUGIN Legacy_UserManager;
 COMMIT;
 QUIT;
 EOF

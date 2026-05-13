@@ -247,25 +247,35 @@ if (-not (Test-Path $SysdbaMarker)) {
     $securityDb = Join-Path $FbDir 'security5.fdb'
     if ((Test-Path $isqlExe) -and (Test-Path $securityDb)) {
         Write-Host "[db-setup] Bootstrap SYSDBA в $securityDb (embedded)..."
+        # CREATE OR ALTER идемпотентно — работает и при первом создании,
+        # и если SYSDBA уже был добавлен в прошлый запуск.
         $bootstrapSql = @"
-CREATE USER SYSDBA PASSWORD 'masterkey' USING PLUGIN Srp;
-CREATE USER SYSDBA PASSWORD 'masterkey' USING PLUGIN Legacy_UserManager;
+CREATE OR ALTER USER SYSDBA PASSWORD 'masterkey' USING PLUGIN Srp;
+CREATE OR ALTER USER SYSDBA PASSWORD 'masterkey' USING PLUGIN Legacy_UserManager;
 COMMIT;
 QUIT;
 "@
         $tempSql = Join-Path $DbDir 'fb-bootstrap.sql'
         Set-Content -Path $tempSql -Value $bootstrapSql -Encoding ASCII
 
-        # Embedded-режим: указываем FIREBIRD env, isql подключается к файлу напрямую без TCP.
+        # Embedded-режим: FIREBIRD env, isql подключается к файлу напрямую без TCP.
         $env:FIREBIRD = (Resolve-Path $FbDir).Path
         $env:ISC_USER = 'SYSDBA'
         $env:ISC_PASSWORD = $FbPass
         $out = & $isqlExe -bail -i $tempSql $securityDb 2>&1
+        $bootstrapExit = $LASTEXITCODE
         Remove-Item -Force $tempSql -ErrorAction SilentlyContinue
 
-        if ($LASTEXITCODE -eq 0) {
+        # SQLSTATE 23000 (integrity constraint violation) = пользователь уже есть
+        # — для нашего сценария это успех.
+        $alreadyExists = ($out -join "`n") -match '23000'
+        if ($bootstrapExit -eq 0 -or $alreadyExists) {
             Set-Content -Path $SysdbaMarker -Value (Get-Date -Format 'o') -Encoding ASCII
-            Write-Host "[db-setup] SYSDBA создан в security5.fdb"
+            if ($alreadyExists -and $bootstrapExit -ne 0) {
+                Write-Host "[db-setup] SYSDBA уже существовал — продолжаю"
+            } else {
+                Write-Host "[db-setup] SYSDBA создан в security5.fdb"
+            }
             # Сбрасываем seed-маркер и битый FDB от прошлой неудачной попытки
             $FbSeededMarkerReset = Join-Path $DbDir '.firebird-seeded'
             if (Test-Path $FbSeededMarkerReset) {
@@ -276,7 +286,8 @@ QUIT;
                 Remove-Item -Force $fbDbReset
             }
         } else {
-            Write-Host "[db-setup] Предупреждение: bootstrap вернул: $out"
+            Write-Host "[db-setup] Предупреждение: bootstrap вернул код $bootstrapExit"
+            Write-Host $out
         }
     }
 }
