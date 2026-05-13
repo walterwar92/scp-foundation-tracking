@@ -278,22 +278,28 @@ if (Test-Path $dbConf) {
 }
 
 # Сверяем состояние: если seed-маркер говорит «всё ок», но FDB-файла нет —
-# значит предыдущая попытка создала FDB по другому пути (например, длинному
-# кириллическому). Сбрасываем маркер чтобы заново засеяться через текущий путь.
+# значит предыдущая попытка создала FDB по другому пути. Сбрасываем маркер.
 $FbSeededMarkerCheck = Join-Path $DbDir '.firebird-seeded'
 if ((Test-Path $FbSeededMarkerCheck) -and -not (Test-Path $fbDbAbsPathForAlias)) {
     Write-Host "[db-setup] Seed-маркер есть, но FDB не найден по адресу алиаса — сбрасываю состояние"
     Remove-Item -Force $FbSeededMarkerCheck
 }
 
-# Перезагружаем Firebird если:
-#  - алиас только что записали (нужно перечитать конфиг)
-#  - FDB ещё не создан через алиас (старый процесс может не знать алиас)
-$needFbRestart = $aliasNeedsRewrite -or -not (Test-Path $fbDbAbsPathForAlias)
-if ($needFbRestart) {
-    $fbProc = Get-Process firebird -ErrorAction SilentlyContinue
-    if ($fbProc) {
-        Write-Host "[db-setup] Перезагрузка Firebird (применить databases.conf)..."
+# Time-based проверка: если Firebird-процесс запущен РАНЬШЕ последней
+# модификации databases.conf — он работает со старым конфигом, рестарт.
+$fbProc = Get-Process firebird -ErrorAction SilentlyContinue
+if ($fbProc) {
+    try {
+        $procStart = $fbProc.StartTime
+        $confMtime = (Get-Item $dbConf).LastWriteTime
+        $needRestart = ($procStart -lt $confMtime)
+        Write-Host "[db-setup] Firebird PID=$($fbProc.Id) старт=$procStart  conf=$confMtime  рестарт=$needRestart"
+    } catch {
+        # Если не можем прочитать StartTime — рестартим на всякий
+        $needRestart = $true
+    }
+    if ($needRestart) {
+        Write-Host "[db-setup] Firebird работает со старым databases.conf — рестарт..."
         & taskkill.exe /F /IM firebird.exe 2>&1 | Out-Null
         Start-Sleep -Seconds 3
         $still = Get-Process firebird -ErrorAction SilentlyContinue
