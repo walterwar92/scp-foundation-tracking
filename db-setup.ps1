@@ -231,10 +231,56 @@ $fbProc = Get-Process firebird -ErrorAction SilentlyContinue
 if (-not $fbProc) {
     Write-Host "[db-setup] Старт Firebird на порту $FbPort..."
     $fbExe = Join-Path $FbDir 'firebird.exe'
+    # ISC_USER/ISC_PASSWORD сигналят Firebird о первичной инициализации SYSDBA
+    $env:ISC_USER = 'SYSDBA'
+    $env:ISC_PASSWORD = $FbPass
     Start-Process -FilePath $fbExe -ArgumentList '-m' -WorkingDirectory $FbDir -WindowStyle Hidden
     Start-Sleep -Seconds 3
 } else {
     Write-Host "[db-setup] Firebird уже запущен"
+}
+
+# ============== 8b. Bootstrap SYSDBA в security database ==============
+# Firebird 5 ставит security5.fdb пустой — нужно явно создать SYSDBA
+# через isql + ISC_USER/ISC_PASSWORD env vars (bootstrap-режим).
+$SysdbaMarker = Join-Path $DbDir '.firebird-sysdba'
+if (-not (Test-Path $SysdbaMarker)) {
+    $isqlExe = Join-Path $FbDir 'isql.exe'
+    if (Test-Path $isqlExe) {
+        Write-Host "[db-setup] Bootstrap SYSDBA в security database..."
+        $env:ISC_USER = 'SYSDBA'
+        $env:ISC_PASSWORD = $FbPass
+        $bootstrapSql = @"
+CREATE OR ALTER USER SYSDBA PASSWORD 'masterkey' USING PLUGIN Srp;
+CREATE OR ALTER USER SYSDBA PASSWORD 'masterkey' USING PLUGIN Legacy_UserManager;
+COMMIT;
+QUIT;
+"@
+        $tempSql = Join-Path $DbDir 'fb-bootstrap.sql'
+        Set-Content -Path $tempSql -Value $bootstrapSql -Encoding ASCII
+        # Подключаемся к security.db через TCP (sysdba bootstrap из ISC_USER/ISC_PASSWORD env)
+        $out = & $isqlExe -bail -i $tempSql -user SYSDBA -password $FbPass "localhost/${FbPort}:security.db" 2>&1
+        Remove-Item -Force $tempSql
+        if ($LASTEXITCODE -eq 0) {
+            Set-Content -Path $SysdbaMarker -Value (Get-Date -Format 'o') -Encoding ASCII
+            Write-Host "[db-setup] SYSDBA создан"
+            # Если SYSDBA только что bootstrap-нулся, прошлый seed мог не пройти —
+            # сбрасываем seed-маркер, чтобы заново накатить схему и данные.
+            $FbSeededMarkerReset = Join-Path $DbDir '.firebird-seeded'
+            if (Test-Path $FbSeededMarkerReset) {
+                Remove-Item -Force $FbSeededMarkerReset
+                Write-Host "[db-setup] Старый seed-маркер сброшен — Firebird БД будет пере-засеяна."
+            }
+            # Также удаляем возможно битый FDB-файл от предыдущего неудачного create
+            $fbDbReset = Join-Path $FbDir 'databases\scp_foundation.fdb'
+            if (Test-Path $fbDbReset) {
+                Remove-Item -Force $fbDbReset
+                Write-Host "[db-setup] Старый FDB-файл удалён, будет создан заново."
+            }
+        } else {
+            Write-Host "[db-setup] Предупреждение: bootstrap SYSDBA вернул: $out"
+        }
+    }
 }
 
 # ============== 9. Создание Firebird БД + применение SQL ==============

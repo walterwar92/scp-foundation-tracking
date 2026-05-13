@@ -186,10 +186,44 @@ else
         echo "[db-setup] Firebird уже запущен (pid=$(cat "$PID_FILE"))"
     else
         echo "[db-setup] Старт Firebird на порту $FB_PORT..."
+        export ISC_USER=SYSDBA
+        export ISC_PASSWORD="$FB_PASS"
         FIREBIRD="$ROOT/$FB_DIR" LD_LIBRARY_PATH="$ROOT/$FB_DIR/lib:${LD_LIBRARY_PATH:-}" \
             nohup "$ROOT/$FB_DIR/bin/firebird" -m > "$FB_DIR/firebird.log" 2>&1 &
         echo $! > "$PID_FILE"
         sleep 3
+    fi
+
+    # Bootstrap SYSDBA в security database (FB5 ставит её пустой)
+    SYSDBA_MARKER="$DB/.firebird-sysdba"
+    if [ ! -f "$SYSDBA_MARKER" ]; then
+        ISQL="$FB_DIR/bin/isql"
+        if [ -x "$ISQL" ]; then
+            echo "[db-setup] Bootstrap SYSDBA в security database..."
+            BOOTSTRAP_SQL=$(mktemp)
+            cat > "$BOOTSTRAP_SQL" <<EOF
+CREATE OR ALTER USER SYSDBA PASSWORD 'masterkey' USING PLUGIN Srp;
+CREATE OR ALTER USER SYSDBA PASSWORD 'masterkey' USING PLUGIN Legacy_UserManager;
+COMMIT;
+QUIT;
+EOF
+            export ISC_USER=SYSDBA
+            export ISC_PASSWORD="$FB_PASS"
+            FIREBIRD="$ROOT/$FB_DIR" LD_LIBRARY_PATH="$ROOT/$FB_DIR/lib:${LD_LIBRARY_PATH:-}" \
+                "$ISQL" -bail -i "$BOOTSTRAP_SQL" -user SYSDBA -password "$FB_PASS" "localhost/${FB_PORT}:security.db" 2>&1 || true
+            rm -f "$BOOTSTRAP_SQL"
+            date -u +%FT%TZ > "$SYSDBA_MARKER"
+            echo "[db-setup] SYSDBA создан"
+            # Сбрасываем seed-маркер и битый FDB от прошлой неудачной попытки
+            if [ -f "$DB/.firebird-seeded" ]; then
+                rm -f "$DB/.firebird-seeded"
+                echo "[db-setup] Старый seed-маркер сброшен."
+            fi
+            if [ -f "$ROOT/$FB_DIR/databases/scp_foundation.fdb" ]; then
+                rm -f "$ROOT/$FB_DIR/databases/scp_foundation.fdb"
+                echo "[db-setup] Старый FDB-файл удалён."
+            fi
+        fi
     fi
 
     FB_DB_ABS="$ROOT/$FB_DIR/databases/scp_foundation.fdb"
