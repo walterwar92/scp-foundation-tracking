@@ -46,16 +46,14 @@ set "DB_CHOICE="
 set /p DB_CHOICE="Selection [1]: "
 if "%DB_CHOICE%"=="" set "DB_CHOICE=1"
 if "%DB_CHOICE%"=="2" (
-    set "FDB_PATH=%CD%\db-runtime\firebird\databases\scp_foundation.fdb"
-    setlocal enabledelayedexpansion
-    set "FDB_FWD=!FDB_PATH:\=/!"
+    rem Use 'scp' alias from databases.conf ??? full path with non-ASCII
+    rem (e.g. Cyrillic in CD) breaks Jaybird connection string parser.
     > config.properties (
         echo db.dialect=firebird
-        echo db.url=jdbc:firebirdsql://localhost:3051/!FDB_FWD!?charSet=UTF8
+        echo db.url=jdbc:firebirdsql://localhost:3051/scp?charSet=UTF8
         echo db.user=SYSDBA
         echo db.password=masterkey
     )
-    endlocal
     echo [start] Selected: Firebird
 ) else (
     > config.properties (

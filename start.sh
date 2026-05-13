@@ -40,10 +40,10 @@ echo "  2) Firebird"
 read -p "Selection [1]: " DB_CHOICE
 DB_CHOICE=${DB_CHOICE:-1}
 if [ "$DB_CHOICE" = "2" ]; then
-    FDB_PATH="$ROOT/db-runtime/firebird/databases/scp_foundation.fdb"
+    # Используем алиас 'scp' из databases.conf — путь может содержать не-ASCII.
     cat > config.properties <<EOF
 db.dialect=firebird
-db.url=jdbc:firebirdsql://localhost:3051/$FDB_PATH?charSet=UTF8
+db.url=jdbc:firebirdsql://localhost:3051/scp?charSet=UTF8
 db.user=SYSDBA
 db.password=masterkey
 EOF

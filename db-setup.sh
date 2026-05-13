@@ -180,6 +180,19 @@ else
 
     mkdir -p "$FB_DIR/databases"
 
+    # ASCII-алиас 'scp' в databases.conf — путь может содержать не-ASCII,
+    # Jaybird падает на транслитерации Cyrillic в JDBC URL.
+    FB_DB_CONF="$FB_DIR/databases.conf"
+    FB_ALIAS_TARGET="$ROOT/$FB_DIR/databases/scp_foundation.fdb"
+    if ! grep -q "^scp\s*=" "$FB_DB_CONF" 2>/dev/null; then
+        {
+            echo ""
+            echo "# SCP Foundation portable alias"
+            echo "scp = $FB_ALIAS_TARGET"
+        } >> "$FB_DB_CONF"
+        echo "[db-setup] Алиас 'scp' добавлен в databases.conf"
+    fi
+
     # Bootstrap SYSDBA в security database (FB5 ставит её пустой).
     # Делаем ДО старта сервера: isql в embedded-режиме работает с security5.fdb
     # напрямую без TCP-аутентификации.
@@ -241,9 +254,11 @@ EOF
         if [ -f "$FB_DB_ABS" ]; then
             echo "[db-setup] FDB-файл существует, пропускаю создание"
         else
-            echo "[db-setup] Создание Firebird БД..."
+            echo "[db-setup] Создание Firebird БД через алиас 'scp'..."
+            # Алиас 'scp' определён в databases.conf — обходим проблему
+            # с не-ASCII в connection string Jaybird-а.
             invoke_sql org.firebirdsql.jdbc.FBDriver \
-                "jdbc:firebirdsql://localhost:$FB_PORT/$FB_DB_ABS?charSet=UTF8&createDatabaseIfNotExist=true" \
+                "jdbc:firebirdsql://localhost:$FB_PORT/scp?charSet=UTF8&createDatabaseIfNotExist=true" \
                 SYSDBA "$FB_PASS" \
                 -c 'SELECT 1 FROM RDB$DATABASE' true || true
         fi
@@ -252,7 +267,7 @@ EOF
         for f in 01_schema.sql 02_constraints.sql 03_seed.sql; do
             echo "  sql/firebird/$f"
             invoke_sql org.firebirdsql.jdbc.FBDriver \
-                "jdbc:firebirdsql://localhost:$FB_PORT/$FB_DB_ABS?charSet=UTF8" \
+                "jdbc:firebirdsql://localhost:$FB_PORT/scp?charSet=UTF8" \
                 SYSDBA "$FB_PASS" \
                 -f "sql/firebird/$f" true || true
         done
@@ -274,7 +289,7 @@ echo "[db-setup] Обновление config.properties..."
         echo ""
         echo "# Firebird (портативный, db-runtime/firebird) - раскомментируйте и закомментируйте Postgres:"
         echo "# db.dialect=firebird"
-        echo "# db.url=jdbc:firebirdsql://localhost:$FB_PORT/$ROOT/$FB_DIR/databases/scp_foundation.fdb?charSet=UTF8"
+        echo "# db.url=jdbc:firebirdsql://localhost:$FB_PORT/scp?charSet=UTF8"
         echo "# db.user=SYSDBA"
         echo "# db.password=$FB_PASS"
     fi

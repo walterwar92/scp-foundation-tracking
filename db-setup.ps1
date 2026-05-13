@@ -226,6 +226,25 @@ if (Test-Path (Join-Path $FbDir 'firebird.exe')) {
 
 New-Item -ItemType Directory -Force -Path (Join-Path $FbDir 'databases') | Out-Null
 
+# ============== 7b. databases.conf: ASCII-алиас 'scp' для нашей БД ==============
+# JDBC URL с кириллицей в пути (например, "...Роман\Desktop\BD project\...")
+# падает на Jaybird: "Cannot transliterate character between character sets"
+# (SQLSTATE 08001). Решение — алиас в databases.conf, тогда в URL только ASCII.
+$fbAbsPathForAlias = (Resolve-Path -LiteralPath $FbDir).Path
+$fbDbAbsPathForAlias = Join-Path $fbAbsPathForAlias 'databases\scp_foundation.fdb'
+$dbConf = Join-Path $FbDir 'databases.conf'
+$aliasLine = "scp = $fbDbAbsPathForAlias"
+if (Test-Path $dbConf) {
+    $dbConfText = Get-Content $dbConf -Raw -ErrorAction SilentlyContinue
+    if ($dbConfText -notmatch '(?m)^\s*scp\s*=') {
+        Add-Content -Path $dbConf -Value "`n# SCP Foundation portable alias`n$aliasLine`n" -Encoding UTF8
+        Write-Host "[db-setup] Алиас 'scp' добавлен в databases.conf"
+    }
+} else {
+    Set-Content -Path $dbConf -Value "# SCP Foundation portable alias`n$aliasLine`n" -Encoding UTF8
+    Write-Host "[db-setup] databases.conf создан с алиасом 'scp'"
+}
+
 # ============== 8a. Bootstrap SYSDBA в security database ==============
 # Firebird 5 ставит security5.fdb пустой. Чтобы создать SYSDBA, надо
 # работать с файлом security5.fdb напрямую в embedded-режиме (без сервера).
@@ -313,14 +332,16 @@ if (Test-Path $FbSeededMarker) {
     if (Test-Path $fbDbAbsPath) {
         Write-Host "[db-setup] FDB-файл существует, пропускаю создание"
     } else {
-        Write-Host "[db-setup] Создание Firebird БД..."
-        $createUrl = "jdbc:firebirdsql://localhost:$FbPort/${fbDbAbsPath}?charSet=UTF8&createDatabaseIfNotExist=true&isc_dpb_force_write=true"
+        Write-Host "[db-setup] Создание Firebird БД через алиас 'scp'..."
+        # Используем алиас 'scp' (ASCII) вместо абсолютного пути с кириллицей —
+        # Jaybird падает на транслитерации Cyrillic в connection string.
+        $createUrl = "jdbc:firebirdsql://localhost:$FbPort/scp?charSet=UTF8&createDatabaseIfNotExist=true&isc_dpb_force_write=true"
         Invoke-Sql 'org.firebirdsql.jdbc.FBDriver' $createUrl `
             'SYSDBA' $FbPass '-c' 'SELECT 1 FROM RDB$DATABASE' $true
     }
 
     Write-Host "[db-setup] Применение schema/constraints/seed (Firebird)..."
-    $fbJdbc = "jdbc:firebirdsql://localhost:$FbPort/${fbDbAbsPath}?charSet=UTF8"
+    $fbJdbc = "jdbc:firebirdsql://localhost:$FbPort/scp?charSet=UTF8"
     foreach ($f in @('01_schema.sql', '02_constraints.sql', '03_seed.sql')) {
         Write-Host "  sql\firebird\$f"
         Invoke-Sql 'org.firebirdsql.jdbc.FBDriver' $fbJdbc `
@@ -341,8 +362,9 @@ db.user=$PgUser
 db.password=$PgPass
 
 # Firebird (портативный, db-runtime/firebird) - раскомментируйте и закомментируйте Postgres:
+# Алиас 'scp' определён в db-runtime/firebird/databases.conf.
 # db.dialect=firebird
-# db.url=jdbc:firebirdsql://localhost:$FbPort/$($fbDbAbsPath -replace '\\', '/')?charSet=UTF8
+# db.url=jdbc:firebirdsql://localhost:$FbPort/scp?charSet=UTF8
 # db.user=SYSDBA
 # db.password=$FbPass
 "@
