@@ -277,17 +277,27 @@ if (Test-Path $dbConf) {
     Write-Host "[db-setup] databases.conf создан с алиасом 'scp'"
 }
 
-# Каждый раз когда мы трогаем databases.conf — перезагружаем сервер
-if ($aliasNeedsRewrite) {
+# Сверяем состояние: если seed-маркер говорит «всё ок», но FDB-файла нет —
+# значит предыдущая попытка создала FDB по другому пути (например, длинному
+# кириллическому). Сбрасываем маркер чтобы заново засеяться через текущий путь.
+$FbSeededMarkerCheck = Join-Path $DbDir '.firebird-seeded'
+if ((Test-Path $FbSeededMarkerCheck) -and -not (Test-Path $fbDbAbsPathForAlias)) {
+    Write-Host "[db-setup] Seed-маркер есть, но FDB не найден по адресу алиаса — сбрасываю состояние"
+    Remove-Item -Force $FbSeededMarkerCheck
+}
+
+# Перезагружаем Firebird если:
+#  - алиас только что записали (нужно перечитать конфиг)
+#  - FDB ещё не создан через алиас (старый процесс может не знать алиас)
+$needFbRestart = $aliasNeedsRewrite -or -not (Test-Path $fbDbAbsPathForAlias)
+if ($needFbRestart) {
     $fbProc = Get-Process firebird -ErrorAction SilentlyContinue
     if ($fbProc) {
-        Write-Host "[db-setup] Перезагрузка Firebird для применения алиаса..."
+        Write-Host "[db-setup] Перезагрузка Firebird (применить databases.conf)..."
         & taskkill.exe /F /IM firebird.exe 2>&1 | Out-Null
         Start-Sleep -Seconds 3
-        # Проверяем что процесс действительно умер
         $still = Get-Process firebird -ErrorAction SilentlyContinue
         if ($still) {
-            Write-Host "[db-setup] WARN: Firebird не умер, делаю Stop-Process..."
             Stop-Process -Id $still.Id -Force -ErrorAction SilentlyContinue
             Start-Sleep -Seconds 2
         }
