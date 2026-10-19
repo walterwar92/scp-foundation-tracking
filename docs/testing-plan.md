@@ -14,7 +14,7 @@
 
 | # | Сценарий | Ожидаемый результат |
 |---|---|---|
-| 2.1 | Вход admin / scp-foundation | Успех, отображение «WELCOME, DR. ALTO CLEF» |
+| 2.1 | Вход admin / admin | Успех, отображение «WELCOME, DR. ALTO CLEF» |
 | 2.2 | Вход admin / wrong | «ACCESS DENIED — неверные учётные данные» |
 | 2.3 | Вход несуществующего логина | «ACCESS DENIED» |
 | 2.4 | Вход с пустым логином | «Введите login и password» |

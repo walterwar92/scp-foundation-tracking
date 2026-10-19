@@ -395,9 +395,13 @@ if (Test-Path $FbSeededMarker) {
         Write-Host "[db-setup] FDB-файл существует, пропускаю создание"
     } else {
         Write-Host "[db-setup] Создание Firebird БД ($fbDbUrlPath)..."
-        $createUrl = "jdbc:firebirdsql://localhost:$FbPort/$fbDbUrlPath?charSet=UTF8&createDatabaseIfNotExist=true"
-        Invoke-Sql 'org.firebirdsql.jdbc.FBDriver' $createUrl `
-            'SYSDBA' $FbPass '-c' 'SELECT 1 FROM RDB$DATABASE' $true
+        # Jaybird 5 не умеет createDatabaseIfNotExist — создаём через isql.
+        $createSql = Join-Path (Split-Path $fbDbAbsPath) 'create.sql'
+        Set-Content -Path $createSql -Encoding ASCII -Value `
+            "CREATE DATABASE 'localhost/${FbPort}:$fbDbUrlPath' USER 'SYSDBA' PASSWORD '$FbPass' DEFAULT CHARACTER SET UTF8;"
+        & (Join-Path $FbDir 'isql.exe') -q -i $createSql
+        Remove-Item $createSql -ErrorAction SilentlyContinue
+        if (-not (Test-Path $fbDbAbsPath)) { Write-Error "Не удалось создать Firebird БД: $fbDbAbsPath" }
     }
 
     Write-Host "[db-setup] Применение schema/constraints/seed (Firebird)..."

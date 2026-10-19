@@ -21,7 +21,8 @@ echo "[setup] Java $JAVA_VERSION OK"
 OS=$(uname -s)
 case "$OS" in
     Linux*)   FX_OS="linux" ;;
-    Darwin*)  FX_OS="mac" ;;
+    Darwin*)
+        if [ "$(uname -m)" = "arm64" ]; then FX_OS="mac-aarch64"; else FX_OS="mac"; fi ;;
     *)        echo "ERROR: неподдерживаемая ОС $OS"; exit 1 ;;
 esac
 echo "[setup] Platform: $FX_OS"

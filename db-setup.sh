@@ -23,7 +23,9 @@ FB_PASS="masterkey"
 OS=$(uname -s)
 case "$OS" in
     Linux*)  PG_OS=linux-amd64; FB_OS=linux-x64;   FB_EXT=tar.gz ;;
-    Darwin*) PG_OS=darwin-amd64; FB_OS=macos-arm64; FB_EXT=pkg ;;
+    Darwin*)
+        if [ "$(uname -m)" = "arm64" ]; then PG_OS=darwin-arm64v8; else PG_OS=darwin-amd64; fi
+        FB_OS=macos-arm64; FB_EXT=pkg ;;
     *) echo "ERROR: неподдерживаемая ОС $OS"; exit 1 ;;
 esac
 
@@ -270,10 +272,12 @@ EOF
             echo "[db-setup] Создание Firebird БД через алиас 'scp'..."
             # Алиас 'scp' определён в databases.conf — обходим проблему
             # с не-ASCII в connection string Jaybird-а.
-            invoke_sql org.firebirdsql.jdbc.FBDriver \
-                "jdbc:firebirdsql://localhost:$FB_PORT/scp?charSet=UTF8&createDatabaseIfNotExist=true" \
-                SYSDBA "$FB_PASS" \
-                -c 'SELECT 1 FROM RDB$DATABASE' true || true
+            # Jaybird 5 не умеет createDatabaseIfNotExist — создаём через isql.
+            CREATE_SQL=$(mktemp)
+            echo "CREATE DATABASE 'localhost/$FB_PORT:scp' USER 'SYSDBA' PASSWORD '$FB_PASS' DEFAULT CHARACTER SET UTF8;" > "$CREATE_SQL"
+            FIREBIRD="$ROOT/$FB_DIR" LD_LIBRARY_PATH="$ROOT/$FB_DIR/lib:${LD_LIBRARY_PATH:-}" \
+                "$FB_DIR/bin/isql" -q -i "$CREATE_SQL" || true
+            rm -f "$CREATE_SQL"
         fi
 
         echo "[db-setup] Применение schema/constraints/seed (Firebird)..."

@@ -14,13 +14,13 @@ public class UserDao extends BaseDao {
     private static String selectByLogin() {
         var role = ConnectionManager.dialect().quoteIdent("role");
         return "SELECT id, personnel_id, login, password_hash, salt, " + role +
-               " AS role, created_at FROM users WHERE login = ?";
+               ", created_at FROM users WHERE login = ?";
     }
 
     private static String selectAll() {
         var role = ConnectionManager.dialect().quoteIdent("role");
         return "SELECT id, personnel_id, login, password_hash, salt, " + role +
-               " AS role, created_at FROM users ORDER BY login";
+               ", created_at FROM users ORDER BY login";
     }
 
     private static String insertSql() {

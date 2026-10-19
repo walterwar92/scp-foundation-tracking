@@ -25,3 +25,12 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Local artifacts not needed for the build
+*.exe
+javafx-sdk-*/
+fronted.zip
+fronted-extracted/
+docs/report/
+/бд.docx
+sources.txt

@@ -12,12 +12,12 @@ public class PersonnelDao extends BaseDao {
 
     private static String selectAll() {
         var pos = ConnectionManager.dialect().quoteIdent("position");
-        return "SELECT id, full_name, " + pos + " AS position, clearance_level, base_site_id FROM personnel ORDER BY full_name";
+        return "SELECT id, full_name, " + pos + ", clearance_level, base_site_id FROM personnel ORDER BY full_name";
     }
 
     private static String selectById() {
         var pos = ConnectionManager.dialect().quoteIdent("position");
-        return "SELECT id, full_name, " + pos + " AS position, clearance_level, base_site_id FROM personnel WHERE id = ?";
+        return "SELECT id, full_name, " + pos + ", clearance_level, base_site_id FROM personnel WHERE id = ?";
     }
 
     private static String insertSql() {

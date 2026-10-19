@@ -67,10 +67,10 @@ INSERT INTO procedure_revisions (scp_id, revision_number, revision_date, procedu
 
 -- Users (5 записей: 1 O5 + 4 researchers с разным clearance)
 -- Хеши SHA-256(salt || password) сгенерированы через PasswordHasher (Batch 9).
--- Пароли: admin/scp-foundation, sglass/euclid-1989, dnavarro/alpha-bravo,
+-- Пароли: admin/admin, sglass/euclid-1989, dnavarro/alpha-bravo,
 --         evolkov/containment-66, ytanaka/research-2024.
 INSERT INTO users (personnel_id, login, password_hash, salt, role) VALUES
-    (1, 'admin',    '162fd61c7339ad5e64f3fe16a70cd74efdd8d85dc4ec2045b2c62b15134e5dcd', '8be3f19ea48185fc6e97bb0a91129747', 'O5'),
+    (1, 'admin',    'dd276f17dcc60ed1f8fce47c8bba2ff52714864ec21e04580cc137b7cc363ba3', '8be3f19ea48185fc6e97bb0a91129747', 'O5'),
     (2, 'sglass',   '6b0baa7b344774f0174258e3e7d9df62bc6898b9738b2b61e9657df7b366f922', 'a154008cee3c47e0d0ee4eab4f5adca6', 'RESEARCHER'),
     (3, 'dnavarro', '24bd38e2d4cf775c27572bce26eb6f3f9cd096c81a3b16a621c58680cc4e8013', '97bf57a8bba5436506b9b0f97c402c68', 'RESEARCHER'),
     (4, 'evolkov',  '4e91f95bdf7d90826ac77ec541c3713c672e97a87668123436452aee83d7eb08', 'b03103ac7def653127ac9db77ccaa6f5', 'RESEARCHER'),
